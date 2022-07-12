@@ -1,3 +1,4 @@
+import Divider from "../Dividier/Divider";
 import { Link } from "react-router-dom";
 import Logo from "../Logo/Logo";
 
@@ -73,7 +74,7 @@ export default function Footer() {
           </div>
         </div>
       </div>
-      <hr className="my-4 w-full border-[0.5px] border-solid border-slate-400" />
+      <Divider className="my-4" />
       <div className="flex justify-between opacity-70">
         <p>Copyright ©2022 IC2. All Right Reserved</p>
         <p>Developed with ❤️ and ☕️</p>
