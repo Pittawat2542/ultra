@@ -1,7 +1,17 @@
+import FeatureSection from "~/components/IndexPage/FeatureSection/FeatureSection";
+import Footer from "~/components/Footer/Footer";
+import HeroSection from "~/components/IndexPage/HeroSection/HeroSection";
+import NavigationBar from "~/components/NavigationBar/NavigationBar";
+
 export default function Index() {
   return (
-    <main className="relative min-h-screen bg-white sm:flex sm:items-center sm:justify-center">
-      <h1>Hello World!</h1>
-    </main>
+    <>
+      <NavigationBar />
+      <main className="px-32">
+        <HeroSection />
+        <FeatureSection />
+      </main>
+      <Footer />
+    </>
   );
 }
