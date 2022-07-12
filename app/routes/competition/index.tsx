@@ -1,7 +1,6 @@
 import CompetitionDetailCard from "~/components/Competitions/CompetitionDetailCard/CompetitionDetailCard";
 import Footer from "~/components/Footer/Footer";
 import HeroSection from "~/components/HeroSection/HeroSection";
-import { Link } from "@remix-run/react";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
 import SectionHeader from "~/components/Competitions/SectionHeader/SectionHeader";
 

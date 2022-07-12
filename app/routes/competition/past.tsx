@@ -2,7 +2,7 @@ import CompetitionDetailCard from "~/components/Competitions/CompetitionDetailCa
 import Footer from "~/components/Footer/Footer";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
 
-export default function CompetitionIndex() {
+export default function PastCompetitions() {
   return (
     <>
       <NavigationBar />
