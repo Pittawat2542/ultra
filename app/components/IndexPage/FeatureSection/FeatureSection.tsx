@@ -14,18 +14,21 @@ export default function FeatureSection() {
         title="Explore"
         description="Explore poster exhibitions, participate in voting your favorite poster, and learn new things across fields."
         buttonText="Explore"
+        url="/competition"
       />
       <FeatureCard
         icon={<UploadIcon className="h-12 w-12" />}
         title="Submit"
         description="Submit your poster, both in normal and AR format, and get feedback from the community."
         buttonText="Submit"
+        url=""
       />
       <FeatureCard
         icon={<PresentationChartBarIcon className="h-12 w-12" />}
         title="Organize"
         description="Organize a new poster exhibition, host an amazing event, and share your expertise."
         buttonText="Organize"
+        url=""
       />
     </section>
   );
