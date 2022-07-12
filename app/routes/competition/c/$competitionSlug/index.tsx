@@ -19,7 +19,7 @@ export default function CompetitionDetailIndex() {
   return (
     <>
       <NavigationBar />
-      <main className="px-32">
+      <main className="px-32 mt-8">
         <section>
           <div className="flex items-center justify-between gap-16">
             <h1 className="flex-1 font-serif text-6xl font-bold leading-tight">
