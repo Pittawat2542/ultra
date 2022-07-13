@@ -15,7 +15,7 @@ import PosterCard from "~/components/Competitions/PosterCard/PosterCard";
 import { formatDateTimeString } from "~/utils/time";
 
 export default function CompetitionDetailIndex() {
-  //TODO: Handle empty state when there is no poster submitted & more configuration display
+  //TODO: Handle empty state when there is no poster submitted & more configuration display and ranking mode after rank announcement date passed
   return (
     <>
       <NavigationBar />
