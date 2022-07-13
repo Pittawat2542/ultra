@@ -1,4 +1,4 @@
-import Divider from "../Dividier/Divider";
+import Divider from "../Divider/Divider";
 import { Link } from "react-router-dom";
 import Logo from "../Logo/Logo";
 

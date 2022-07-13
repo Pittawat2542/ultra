@@ -8,7 +8,7 @@ import {
 } from "@heroicons/react/outline";
 
 import Button from "~/components/Button/Button";
-import Divider from "~/components/Dividier/Divider";
+import Divider from "~/components/Divider/Divider";
 import Footer from "~/components/Footer/Footer";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
 import PosterCard from "~/components/Competitions/PosterCard/PosterCard";
@@ -122,19 +122,19 @@ export default function CompetitionDetailIndex() {
           <div className="grid grid-cols-3 gap-8">
             <PosterCard
               title="F.E.A.S.T: Fully-elastic Architecture Strategy for Training Neural Network"
-              url=""
+              url="p/test"
               imageUrl="https://cdn.pixabay.com/photo/2022/07/08/02/44/pet-7308330_1280.jpg"
               authors={["John Doe", "Jane Doe"]}
             />
              <PosterCard
               title="Decepticon: An Alternative to Transformers Architecture"
-              url=""
+              url="p/test"
               imageUrl="https://cdn.pixabay.com/photo/2022/07/06/18/34/mountains-7305769_1280.jpg"
               authors={["John Doe", "Jane Doe", "Kane Doe"]}
             />
             <PosterCard
               title="F.E.A.S.T: Fully-elastic Architecture Strategy for Training Neural Network"
-              url=""
+              url="p/test"
               imageUrl="https://cdn.pixabay.com/photo/2022/07/08/02/44/pet-7308330_1280.jpg"
               authors={["John Doe", "Jane Doe", "Kane Doe", "Peter Doe"]}
             />
