@@ -10,6 +10,7 @@ import {
 import Button from "~/components/Button/Button";
 import Divider from "~/components/Divider/Divider";
 import Footer from "~/components/Footer/Footer";
+import { Link } from "@remix-run/react";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
 import PosterCard from "~/components/Competitions/PosterCard/PosterCard";
 import { formatDateTimeString } from "~/utils/time";
@@ -19,7 +20,7 @@ export default function CompetitionDetailIndex() {
   return (
     <>
       <NavigationBar />
-      <main className="px-32 mt-8">
+      <main className="mt-8 px-32">
         <section>
           <div className="flex items-center justify-between gap-16">
             <h1 className="flex-1 font-serif text-6xl font-bold leading-tight">
@@ -33,7 +34,9 @@ export default function CompetitionDetailIndex() {
                 alt=""
               />
               <div className="mt-6 flex w-full justify-between gap-4">
-                <Button className="w-full">AR Experience</Button>
+                <Link className="block w-full" to="ar">
+                  <Button className="w-full">AR Experience</Button>
+                </Link>
                 <Button className="w-full">Register</Button>
               </div>
             </div>
@@ -118,7 +121,9 @@ export default function CompetitionDetailIndex() {
           </p>
         </section>
         <section className="mt-16">
-          <h2 className="font-serif text-4xl font-bold leading-10 mb-8">Posters</h2>
+          <h2 className="mb-8 font-serif text-4xl font-bold leading-10">
+            Posters
+          </h2>
           <div className="grid grid-cols-3 gap-8">
             <PosterCard
               title="F.E.A.S.T: Fully-elastic Architecture Strategy for Training Neural Network"
@@ -126,7 +131,7 @@ export default function CompetitionDetailIndex() {
               imageUrl="https://cdn.pixabay.com/photo/2022/07/08/02/44/pet-7308330_1280.jpg"
               authors={["John Doe", "Jane Doe"]}
             />
-             <PosterCard
+            <PosterCard
               title="Decepticon: An Alternative to Transformers Architecture"
               url="p/test"
               imageUrl="https://cdn.pixabay.com/photo/2022/07/06/18/34/mountains-7305769_1280.jpg"
