@@ -10,11 +10,6 @@ export default function NavigationBar() {
       </Link>
       <ul className="flex flex-wrap items-center justify-between text-xl">
         <li>
-          <Link to="/signup" className="pr-6">
-            Sign Up
-          </Link>
-        </li>
-        <li>
           <Link to="/login">
             <Button>Login</Button>
           </Link>
