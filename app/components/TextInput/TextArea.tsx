@@ -20,9 +20,7 @@ export default function TextArea({
       <span className="flex justify-between">
         <span>
           {labelText}
-          <span className="font-normal italic">
-            {isRequired ? " (Required)" : ""}
-          </span>
+          {isRequired && <span className="font-normal italic"> (Required)</span>}
         </span>
         {maxLength && (
           <span className="text-sm font-normal">

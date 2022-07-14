@@ -51,9 +51,9 @@ export default function ListInput({
       <span className="flex justify-between">
         <span>
           {labelText}
-          <span className="font-normal italic">
-            {isRequired ? " (Required)" : ""}
-          </span>
+          {isRequired && (
+            <span className="font-normal italic"> (Required)</span>
+          )}
         </span>
       </span>
       <Divider className="my-2" />

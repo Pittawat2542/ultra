@@ -1,25 +1,16 @@
+import { Form, Link } from "@remix-run/react";
+
 import Button from "~/components/Button/Button";
 import Divider from "~/components/Divider/Divider";
+import FileUploadInput from "~/components/FileUploadInput/FileUploadInput";
 import Footer from "~/components/Footer/Footer";
-import { Form } from "@remix-run/react";
 import ListInput from "~/components/ListInput/ListInput";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
 import PageHeader from "~/components/Competitions/PageHeader/PageHeader";
 import TextArea from "~/components/TextInput/TextArea";
 import TextInput from "~/components/TextInput/TextInput";
-import { UploadIcon } from "@heroicons/react/outline";
-import { useDropzone } from "react-dropzone";
 
 export default function PastCompetitions() {
-  //TODO: Complete author inputs
-  const { acceptedFiles, fileRejections, getRootProps, getInputProps } =
-    useDropzone({
-      accept: {
-        "image/jpeg": [],
-        "image/png": [],
-      },
-    });
-
   return (
     <>
       <NavigationBar />
@@ -41,41 +32,12 @@ export default function PastCompetitions() {
             }
           />
           <Form>
-            <label className="my-4 block font-bold" htmlFor="poster-image">
-              Poster Image{" "}
-              <span className="font-normal italic">(Required)</span>
-              <div
-                {...getRootProps()}
-                className="mt-2 flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-white px-8 py-16 font-normal hover:bg-white hover:bg-opacity-30 focus:bg-opacity-30"
-              >
-                <input
-                  name="poster-image"
-                  id="poster-image"
-                  {...getInputProps()}
-                />
-                <UploadIcon className="mb-2 h-16 w-16 stroke-1" />
-                <p className="text-xl font-bold">Upload Poster Image File</p>
-                <p className="mb-3">
-                  Drag &amp; Drop to This Area or click to choose from file
-                  manager.
-                </p>
-                <p className="italic">
-                  <span className="font-bold">Accepted Format:</span> .jpg,
-                  .jpeg, .png
-                </p>
-                <p className="italic">
-                  <span className="font-bold">Recommended resolution:</span> ???
-                  x ???,
-                </p>
-                <p className="italic">
-                  <span className="font-bold">Maximum number of file:</span> 1
-                  file
-                </p>
-                <p className="italic">
-                  <span className="font-bold">Maximum file size:</span> 10MB
-                </p>
-              </div>
-            </label>
+            <FileUploadInput
+              id="poster-image"
+              labelText="Poster Image"
+              isRequired={true}
+              callToActionText={"Upload Poster Image File"}
+            />
             <TextInput
               labelText="Title"
               id="title"
@@ -105,7 +67,9 @@ export default function PastCompetitions() {
             <Divider className="mt-4 mb-6" />
             <div className="flex justify-end gap-8">
               <Button className="w-1/6">Submit</Button>
-              <Button className="w-1/6">Add AR Poster</Button>
+              <Link className="w-1/6" to="ar">
+                <Button className="w-full">Add AR Poster</Button>
+              </Link>
             </div>
           </Form>
         </section>
