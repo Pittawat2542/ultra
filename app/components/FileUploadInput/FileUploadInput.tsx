@@ -8,6 +8,7 @@ type FileUploadInputProps = {
   maxNumberOfFiles?: number;
   maxSizeOfFile?: number;
   callToActionText: string;
+  type: "image" | "model";
 };
 
 export default function FileUploadInput({
@@ -17,12 +18,16 @@ export default function FileUploadInput({
   maxNumberOfFiles = 1,
   maxSizeOfFile = 10,
   callToActionText,
+  type
 }: FileUploadInputProps) {
   const { acceptedFiles, fileRejections, getRootProps, getInputProps } =
     useDropzone({
-      accept: {
+      accept: type === "image" ? {
         "image/jpeg": [],
         "image/png": [],
+      } : {
+        ".gltf": [],
+        ".glb": [],
       },
     });
 
@@ -41,7 +46,7 @@ export default function FileUploadInput({
           Drag &amp; Drop to This Area or click to choose from file manager.
         </p>
         <p className="italic">
-          <span className="font-bold">Accepted Format:</span> .jpg, .jpeg, .png
+          <span className="font-bold">Accepted Format:</span> {type === "image" ? ".jpg, .jpeg, .png" : ".gltf, .glb"}
         </p>
         <p className="italic">
           <span className="font-bold">Recommended resolution:</span> ??? x ???,

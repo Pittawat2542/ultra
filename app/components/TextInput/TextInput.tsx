@@ -7,7 +7,7 @@ type TextInputProps = {
   labelText?: string;
   id: string;
   maxLength?: number;
-  inputRef?: MutableRefObject<HTMLInputElement>;
+  inputRef?: MutableRefObject<HTMLInputElement | null>;
   value?: string;
 };
 

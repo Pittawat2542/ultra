@@ -4,13 +4,13 @@ import Button from "~/components/Button/Button";
 import Divider from "~/components/Divider/Divider";
 import FileUploadInput from "~/components/FileUploadInput/FileUploadInput";
 import Footer from "~/components/Footer/Footer";
-import ListInput from "~/components/ListInput/ListInput";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
 import PageHeader from "~/components/Competitions/PageHeader/PageHeader";
 import TextArea from "~/components/TextInput/TextArea";
 import TextInput from "~/components/TextInput/TextInput";
+import TextListInput from "~/components/ListInput/TextListInput";
 
-export default function PastCompetitions() {
+export default function PosterSubmission() {
   return (
     <>
       <NavigationBar />
@@ -36,6 +36,7 @@ export default function PastCompetitions() {
               id="poster-image"
               labelText="Poster Image"
               isRequired={true}
+              type="image"
               callToActionText={"Upload Poster Image File"}
             />
             <TextInput
@@ -50,7 +51,7 @@ export default function PastCompetitions() {
               isRequired={true}
               maxLength={2500}
             />
-            <ListInput
+            <TextListInput
               labelText="Author(s)"
               isRequired={true}
               addNewLabelText="Author"

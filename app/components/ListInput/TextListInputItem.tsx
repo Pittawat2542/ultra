@@ -5,7 +5,7 @@ import Button from "../Button/Button";
 import Divider from "../Divider/Divider";
 import TextInput from "../TextInput/TextInput";
 
-type ListInputItemProps = {
+type TextListInputItemProps = {
   id: number;
   text: string;
   maxLength?: number;
@@ -13,13 +13,13 @@ type ListInputItemProps = {
   onEdit: (id: number, newText: string) => void;
 };
 
-export default function ListInputItem({
+export default function TextListInputItem({
   id,
   text,
   maxLength,
   onDelete,
   onEdit,
-}: ListInputItemProps) {
+}: TextListInputItemProps) {
   const editItemRef = useRef() as React.MutableRefObject<HTMLInputElement>;
   const [isEditing, setIsEditing] = useState(false);
 
@@ -62,7 +62,7 @@ export default function ListInputItem({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button
+          {!isEditing && <button
             onClick={(e) => {
               e.preventDefault();
               setIsEditing(true);
@@ -70,7 +70,7 @@ export default function ListInputItem({
             className="flex items-center rounded px-4 py-1 transition hover:bg-white hover:bg-opacity-30 focus:bg-opacity-30"
           >
             <PencilIcon className="mr-2 h-5 w-5" /> Edit
-          </button>
+          </button>}
           <button
             onClick={(e) => {
               e.preventDefault();

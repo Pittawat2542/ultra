@@ -2,11 +2,11 @@ import { useRef, useState } from "react";
 
 import Button from "../Button/Button";
 import Divider from "../Divider/Divider";
-import ListInputItem from "./ListInputItem";
 import { PlusIcon } from "@heroicons/react/outline";
 import TextInput from "../TextInput/TextInput";
+import TextListInputItem from "./TextListInputItem";
 
-type ListInputProps = {
+type TextListInputProps = {
   isRequired?: boolean;
   labelText: string;
   maxItems?: number;
@@ -14,13 +14,14 @@ type ListInputProps = {
   maxLength?: number;
 };
 
-export default function ListInput({
+export default function TextListInput({
   isRequired = false,
   labelText,
   maxItems,
   maxLength,
   addNewLabelText,
-}: ListInputProps) {
+}: TextListInputProps) {
+  //TODO: Refactor duplicate code with TextListInputItem
   const [isAdding, setIsAdding] = useState(false);
   const [listItems, setListItems] = useState<string[]>([]);
   const addNewItemRef = useRef() as React.MutableRefObject<HTMLInputElement>;
@@ -58,7 +59,7 @@ export default function ListInput({
       </span>
       <Divider className="my-2" />
       {listItems.map((item, index) => (
-        <ListInputItem
+        <TextListInputItem
           key={index}
           id={index}
           text={item}
