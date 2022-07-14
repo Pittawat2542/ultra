@@ -12,6 +12,7 @@ import Divider from "~/components/Divider/Divider";
 import Footer from "~/components/Footer/Footer";
 import { Link } from "@remix-run/react";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
+import PageHeader from "~/components/Competitions/PageHeader/PageHeader";
 import PosterCard from "~/components/Competitions/PosterCard/PosterCard";
 import { formatDateTimeString } from "~/utils/time";
 
@@ -23,10 +24,7 @@ export default function CompetitionDetailIndex() {
       <main className="mt-8 px-32">
         <section>
           <div className="flex items-center justify-between gap-16">
-            <h1 className="flex-1 font-serif text-6xl font-bold leading-tight">
-              Deep Learning Artificial Intelligence Summer School 2022 Poster
-              Competition
-            </h1>
+            <PageHeader title="Deep Learning Artificial Intelligence Summer School 2022 Poster Competition" />
             <div className="flex flex-1 flex-col items-center">
               <img
                 className="rounded-xl object-contain transition group-hover:opacity-70"
@@ -37,7 +35,9 @@ export default function CompetitionDetailIndex() {
                 <Link className="block w-full" to="ar">
                   <Button className="w-full">AR Experience</Button>
                 </Link>
-                <Button className="w-full">Register</Button>
+                <Link className="block w-full" to="submit">
+                  <Button className="w-full">Register</Button>
+                </Link>
               </div>
             </div>
           </div>

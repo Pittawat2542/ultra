@@ -1,6 +1,7 @@
 import CompetitionCard from "~/components/Competitions/CompetitionCard/CompetitionCard";
 import Footer from "~/components/Footer/Footer";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
+import PageHeader from "~/components/Competitions/PageHeader/PageHeader";
 
 export default function PastCompetitions() {
   return (
@@ -9,9 +10,7 @@ export default function PastCompetitions() {
       <main className="px-32">
         <section className="mt-8">
           <div className="flex max-w-[50%] flex-col">
-            <h1 className="mb-8 font-serif text-4xl font-bold">
-              Past Competitions
-            </h1>
+          <PageHeader title="Past Competition" />
           </div>
           <div className="grid grid-cols-3 gap-8">
             <CompetitionCard

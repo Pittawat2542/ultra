@@ -9,6 +9,7 @@ import Button from "~/components/Button/Button";
 import Divider from "~/components/Divider/Divider";
 import Footer from "~/components/Footer/Footer";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
+import PageHeader from "~/components/Competitions/PageHeader/PageHeader";
 import { formatNames } from "~/utils/string";
 
 export default function PosterDetail() {
@@ -17,20 +18,22 @@ export default function PosterDetail() {
       <NavigationBar />
       <main className="mt-8 px-32">
         <section className="mt-8">
-          <h1 className="flex-1 font-serif text-5xl font-bold leading-tight">
-            F.E.A.S.T: Fully-elastic Architecture Strategy for Training Neural
-            Network
-          </h1>
-          <p className="mt-4 text-xl">
-            As a part of{" "}
-            <a
-              className="ml-1 font-serif text-2xl font-bold hover:underline"
-              href="/competition/c/test"
-            >
-              Deep Learning Artificial Intelligence Summer School 2022 Poster
-              Competition
-            </a>
-          </p>
+          <PageHeader
+            title="F.E.A.S.T: Fully-elastic Architecture Strategy for Training Neural
+            Network"
+            subtitle={
+              <p className="mt-4 text-xl">
+                As a part of{" "}
+                <a
+                  className="ml-1 font-serif text-2xl font-bold hover:underline"
+                  href="/competition/c/test"
+                >
+                  Deep Learning Artificial Intelligence Summer School 2022
+                  Poster Competition
+                </a>
+              </p>
+            }
+          />
           <img
             className="mt-16 mb-8 max-h-[750px] w-full rounded-xl object-cover transition group-hover:opacity-70"
             src="https://cdn.pixabay.com/photo/2022/07/08/02/44/pet-7308330_1280.jpg"
