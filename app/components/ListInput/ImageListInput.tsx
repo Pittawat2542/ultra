@@ -38,9 +38,7 @@ export default function ImageListInput({
   addNewLabelText,
 }: ImageListInputProps) {
   //TODO: Refactor duplicate code with ImageListInputItem
-  const [selectedMediaType, setSelectedMediaType] = useState(
-    Object.values(MediaType)[0]
-  );
+  const [selectedMediaType, setSelectedMediaType] = useState(MediaType.IMAGE);
   const [isAdding, setIsAdding] = useState(false);
   const [listItems, setListItems] = useState<Marking[]>([]);
   const cropperRef = useRef<HTMLImageElement>(null);
@@ -101,16 +99,12 @@ export default function ImageListInput({
               crop={onCrop}
               ref={cropperRef}
             />
-            <label className="flex w-1/4 items-center" htmlFor="">
-              <span className="text-bold mr-4 min-w-fit">
-                Associated Media Type
-              </span>
-              <SelectInput
-                choices={Object.values(MediaType)}
-                selectedChoice={selectedMediaType}
-                setSelectedChoice={onMediaTypeChange}
-              />
-            </label>
+            <SelectInput
+              labelText="Associated Media Type"
+              choices={Object.values(MediaType)}
+              selectedChoice={selectedMediaType}
+              setSelectedChoice={onMediaTypeChange}
+            />
             {selectedMediaType === MediaType.IMAGE && (
               <FileUploadInput
                 id="media-image"
