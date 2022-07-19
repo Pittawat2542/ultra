@@ -1,5 +1,6 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
+import { createUser, getUserByEmail } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
 import { json, redirect } from "@remix-run/node";
 import { safeRedirect, validateEmail } from "~/utils";
@@ -10,7 +11,6 @@ import Footer from "~/components/Footer/Footer";
 import HeroSection from "~/components/HeroSection/HeroSection";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
 import TextInput from "~/components/TextInput/TextInput";
-import { verifyLogin } from "~/models/user.server";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
@@ -22,55 +22,117 @@ export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   const email = formData.get("email");
   const password = formData.get("password");
-  const redirectTo = safeRedirect(formData.get("redirectTo"), "/competition");
-  const remember = formData.get("remember");
+  const firstName = formData.get("firstName");
+  const lastName = formData.get("lastName");
+  const redirectTo = safeRedirect(formData.get("redirectTo"), "/");
 
   if (!validateEmail(email)) {
     return json(
-      { errors: { email: "Email is invalid", password: null } },
+      {
+        errors: {
+          email: "Email is invalid",
+          password: null,
+          firstName: null,
+          lastName: null,
+        },
+      },
       { status: 400 }
     );
   }
 
   if (typeof password !== "string" || password.length === 0) {
     return json(
-      { errors: { email: null, password: "Password is required" } },
+      {
+        errors: {
+          email: null,
+          password: "Password is required",
+          firstName: null,
+          lastName: null,
+        },
+      },
       { status: 400 }
     );
   }
 
   if (password.length < 8) {
     return json(
-      { errors: { email: null, password: "Password is too short" } },
+      {
+        errors: {
+          email: null,
+          password: "Password is too short",
+          firstName: null,
+          lastName: null,
+        },
+      },
       { status: 400 }
     );
   }
 
-  const user = await verifyLogin(email, password);
-
-  if (!user) {
+  const existingUser = await getUserByEmail(email);
+  if (existingUser) {
     return json(
-      { errors: { email: "Invalid email or password", password: null } },
+      {
+        errors: {
+          email: "A user already exists with this email",
+          password: null,
+          firstName: null,
+          lastName: null,
+        },
+      },
       { status: 400 }
     );
   }
+
+  if (typeof firstName !== "string" || firstName.length === 0) {
+    return json(
+      {
+        errors: {
+          email: null,
+          password: null,
+          firstName: "First name is required",
+          lastName: null,
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  if (typeof lastName !== "string" || lastName.length === 0) {
+    return json(
+      {
+        errors: {
+          email: null,
+          password: null,
+          firstName: null,
+          lastName: "Last name is required",
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  const user = await createUser(email, password, firstName, lastName);
 
   return createUserSession({
     request,
     userId: user.id,
-    remember: remember === "on" ? true : false,
+    remember: false,
     redirectTo,
   });
 }
 
-export default function Login() {
+export default function Register() {
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") || "/competition";
+  const redirectTo = searchParams.get("redirectTo") ?? undefined;
   const actionData = useActionData<typeof action>();
   const emailRef = useRef<HTMLInputElement>(null);
   const [email, setEmail] = useState("");
   const passwordRef = useRef<HTMLInputElement>(null);
   const [password, setPassword] = useState("");
+  const firstNameRef = useRef<HTMLInputElement>(null);
+  const [firstName, setFirstName] = useState("");
+  const lastNameRef = useRef<HTMLInputElement>(null);
+  const [lastName, setLastName] = useState("");
 
   useEffect(() => {
     if (actionData?.errors?.email) {
@@ -81,15 +143,16 @@ export default function Login() {
   }, [actionData]);
 
   const heroContent = {
-    titleContent: <h1 className="mb-8 font-serif text-6xl font-bold">Login</h1>,
+    titleContent: (
+      <h1 className="mb-8 font-serif text-6xl font-bold">Register</h1>
+    ),
     subtitleText:
-      "Welcome back! Jump right back into the all-new exhibition experience.",
+      "Get started with all-new experience in exploring exhibitions.",
     heroImageUrl: "/images/hero-login.png",
     actionContent: (
-      <Form method="post" className="mt-8 space-y-6">
+      <Form method="post" className="space-y-6">
         <div className="mt-1">
           <TextInput
-            labelText="Email Address"
             inputRef={emailRef}
             id="email"
             isRequired={true}
@@ -97,6 +160,7 @@ export default function Login() {
             type="email"
             value={email}
             setValue={setEmail}
+            labelText="Email Address"
           />
           {actionData?.errors?.email && (
             <div className="pt-1 text-red-700" id="email-error">
@@ -104,15 +168,16 @@ export default function Login() {
             </div>
           )}
         </div>
+
         <div className="mt-1">
           <TextInput
             id="password"
             inputRef={passwordRef}
-            labelText="Password"
             type="password"
+            isRequired={true}
             value={password}
             setValue={setPassword}
-            isRequired={true}
+            labelText="Password"
           />
           {actionData?.errors?.password && (
             <div className="pt-1 text-red-700" id="password-error">
@@ -121,32 +186,48 @@ export default function Login() {
           )}
         </div>
 
+        <div className="mt-1 flex gap-4">
+          <TextInput
+            id="firstName"
+            inputRef={firstNameRef}
+            isRequired={true}
+            value={firstName}
+            setValue={setFirstName}
+            labelText="First Name"
+          />
+          <TextInput
+            id="lastName"
+            inputRef={lastNameRef}
+            isRequired={true}
+            value={lastName}
+            setValue={setLastName}
+            labelText="Last Name"
+          />
+          {actionData?.errors?.firstName && (
+            <div className="pt-1 text-red-700" id="firstName-error">
+              {actionData.errors.firstName}
+            </div>
+          )}
+          {actionData?.errors?.lastName && (
+            <div className="pt-1 text-red-700" id="lastName-error">
+              {actionData.errors.lastName}
+            </div>
+          )}
+        </div>
+
         <input type="hidden" name="redirectTo" value={redirectTo} />
-        <Button type="submit" className="w-full">
-          Log in
-        </Button>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <input
-              id="remember"
-              name="remember"
-              type="checkbox"
-              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-            />
-            <label htmlFor="remember" className="ml-2 block text-sm">
-              Remember me
-            </label>
-          </div>
+        <Button className="w-full" type="submit">Create Account</Button>
+        <div className="flex items-center justify-end">
           <div className="text-center text-sm">
-            Don't have an account?{" "}
+            Already have an account?{" "}
             <Link
-              className="font-bold hover:underline"
+              className="hover:underline font-bold"
               to={{
-                pathname: "/register",
+                pathname: "/login",
                 search: searchParams.toString(),
               }}
             >
-              Register
+              Log in
             </Link>
           </div>
         </div>
