@@ -8,21 +8,21 @@ import {
   StarIcon,
   UserGroupIcon,
 } from "@heroicons/react/outline";
+import type { Competition, Poster } from "@prisma/client";
+import { Link, useLoaderData } from "@remix-run/react";
 
 import Button from "~/components/Button/Button";
+import { DEFAULT_COVER_IMAGE } from "~/constants/images";
 import Divider from "~/components/Divider/Divider";
+import EmptyState from "~/components/EmptyState/EmptyState";
 import Footer from "~/components/Footer/Footer";
-import { Link, useLoaderData } from "@remix-run/react";
+import type { LoaderFunction } from "@remix-run/node";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
 import PageHeader from "~/components/Competitions/PageHeader/PageHeader";
 import PosterCard from "~/components/Competitions/PosterCard/PosterCard";
 import { formatDateTimeString } from "~/utils/time";
 import { json } from "@remix-run/node";
-import type { LoaderFunction } from "@remix-run/node";
 import { prisma } from "~/db.server";
-import type { Competition, Poster } from "@prisma/client";
-import { DEFAULT_COVER_IMAGE } from "~/constants/images";
-import EmptyState from "~/components/EmptyState/EmptyState";
 
 type LoaderData = {
   competition: Competition;
@@ -57,7 +57,8 @@ export default function CompetitionDetailIndex() {
   let hasRankAnnounced = false;
 
   if (competition.votingPrivacy !== "DISABLED") {
-    hasRankAnnounced = competition.rankAnnouncementDate! >= new Date();
+    hasRankAnnounced =
+      new Date(competition.rankAnnouncementDate!) >= new Date();
   }
 
   //TODO: Define rank calculation logic and supply to the required components
@@ -93,8 +94,10 @@ export default function CompetitionDetailIndex() {
               <ClockIcon className="mr-1 -mt-1 inline-block h-6 w-6" />{" "}
               <span className="mr-4 font-bold">Submission</span>
               {`${formatDateTimeString(
-                competition.submissionStart!
-              )} - ${formatDateTimeString(competition.submissionEnd!)}`}
+                new Date(competition.submissionStart!)
+              )} - ${formatDateTimeString(
+                new Date(competition.submissionEnd!)
+              )}`}
             </p>
           )}
           {competition.votingPrivacy !== "DISABLED" && (
@@ -103,13 +106,15 @@ export default function CompetitionDetailIndex() {
                 <StarIcon className="mr-1 -mt-1 inline-block h-6 w-6" />{" "}
                 <span className="mr-4 font-bold">Voting</span>
                 {`${formatDateTimeString(
-                  competition.votingStart!
-                )} - ${formatDateTimeString(competition.votingEnd!)}`}
+                  new Date(competition.votingStart!)
+                )} - ${formatDateTimeString(new Date(competition.votingEnd!))}`}
               </p>
               <p className="mb-3 text-xl">
                 <ChartBarIcon className="mr-1 -mt-1 inline-block h-6 w-6" />{" "}
                 <span className="mr-4 font-bold">Rank Announcement</span>
-                {formatDateTimeString(competition.rankAnnouncementDate!)}
+                {formatDateTimeString(
+                  new Date(competition.rankAnnouncementDate!)
+                )}
               </p>
             </>
           )}
