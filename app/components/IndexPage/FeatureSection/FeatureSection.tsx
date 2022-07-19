@@ -28,7 +28,7 @@ export default function FeatureSection() {
         title="Organize"
         description="Organize a new poster exhibition, host an amazing event, and share your expertise."
         buttonText="Organize"
-        url=""
+        url="/competition/new"
       />
     </section>
   );
