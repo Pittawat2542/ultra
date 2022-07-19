@@ -1,10 +1,10 @@
-import { useState } from "react";
-
 type TextAreaProps = {
   isRequired?: boolean;
   labelText: string;
   id: string;
   maxLength?: number;
+  value: string;
+  setValue: (value: string) => void;
 };
 
 export default function TextArea({
@@ -12,25 +12,27 @@ export default function TextArea({
   labelText,
   id,
   maxLength,
+  value,
+  setValue,
 }: TextAreaProps) {
-  const [input, setInput] = useState("");
-
   return (
     <label className="my-4 block font-bold" htmlFor={id}>
       <span className="flex justify-between">
         <span>
           {labelText}
-          {isRequired && <span className="font-normal italic"> (Required)</span>}
+          {isRequired && (
+            <span className="font-normal italic"> (Required)</span>
+          )}
         </span>
         {maxLength && (
           <span className="text-sm font-normal">
-            {input.length}/{maxLength} characters
+            {value.length}/{maxLength} characters
           </span>
         )}
       </span>
       <textarea
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
         name={id}
         id={id}
         rows={5}

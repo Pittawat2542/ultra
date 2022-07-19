@@ -2,12 +2,16 @@ type TimeInputProps = {
   id: string;
   labelText?: string;
   isRequired?: boolean;
+  value: string;
+  setValue: (value: string) => void;
 };
 
 export default function TimeInput({
   id,
   labelText,
   isRequired = false,
+  value,
+  setValue,
 }: TimeInputProps) {
   return (
     <label className="my-4 flex flex-col" htmlFor={id}>
@@ -20,6 +24,8 @@ export default function TimeInput({
         type="time"
         name={id}
         id={id}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
       />
     </label>
   );
