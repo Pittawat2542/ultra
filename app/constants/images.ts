@@ -1,0 +1,1 @@
+export const DEFAULT_COVER_IMAGE = "https://cdn.pixabay.com/photo/2022/06/19/11/07/bird-7271620_1280.jpg"

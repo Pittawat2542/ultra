@@ -1,12 +1,13 @@
 import Card from "~/components/Card/Card";
+import { DEFAULT_COVER_IMAGE } from "~/constants/images";
 import { formatDateTimeString } from "~/utils/time";
 import moment from "moment";
 
 type CompetitionCardProps = {
   url: string;
-  imageUrl: string;
+  imageUrl: string | null;
   title: string;
-  submissionDeadline: Date;
+  submissionDeadline: string;
 };
 
 export default function CompetitionCard({
@@ -21,7 +22,7 @@ export default function CompetitionCard({
     <Card
       title={title}
       url={url}
-      imageUrl={imageUrl}
+      imageUrl={imageUrl ?? DEFAULT_COVER_IMAGE}
       subtitle={
         hasDeadlinePassed ? (
           <></>
@@ -29,7 +30,7 @@ export default function CompetitionCard({
           <p className="mt-6 mb-4 self-end">
             Submission deadline{" "}
             <span className="font-bold">
-              {formatDateTimeString(submissionDeadline)}
+              {formatDateTimeString((submissionDeadline))}
             </span>
           </p>
         )

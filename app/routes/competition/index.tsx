@@ -1,9 +1,21 @@
+import type { Competition } from "@prisma/client";
 import CompetitionCard from "~/components/Competitions/CompetitionCard/CompetitionCard";
 import Divider from "~/components/Divider/Divider";
+import EmptyState from "~/components/EmptyState/EmptyState";
 import Footer from "~/components/Footer/Footer";
 import HeroSection from "~/components/HeroSection/HeroSection";
+import type { LoaderFunction } from "@remix-run/node";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
+import { QuestionMarkCircleIcon } from "@heroicons/react/outline";
 import SectionHeader from "~/components/Competitions/SectionHeader/SectionHeader";
+import { json } from "@remix-run/node";
+import { prisma } from "~/db.server";
+import { useLoaderData } from "@remix-run/react";
+
+type LoaderData = {
+  currentCompetitions: Array<Competition>;
+  pastCompetitions: Array<Competition>;
+};
 
 const heroContent = {
   titleContent: (
@@ -14,8 +26,41 @@ const heroContent = {
   heroImageUrl: "/images/hero-competition.png",
 };
 
+export const loader: LoaderFunction = async () => {
+  const currentCompetitions = await prisma.competition.findMany({
+    where: {
+      viewingPrivacy: "PUBLIC",
+      submissionPrivacy: "PUBLIC",
+      submissionEnd: {
+        gte: new Date(),
+      },
+    },
+    take: 6,
+    orderBy: {
+      submissionEnd: "desc",
+    },
+  });
+
+  const pastCompetitions = await prisma.competition.findMany({
+    where: {
+      viewingPrivacy: "PUBLIC",
+      submissionPrivacy: "PUBLIC",
+      submissionEnd: {
+        lte: new Date(),
+      },
+    },
+    take: 6,
+    orderBy: {
+      submissionEnd: "desc",
+    },
+  });
+
+  return json<LoaderData>({ currentCompetitions, pastCompetitions });
+};
+
 export default function CompetitionIndex() {
-  //TODO: Sort data by date descending (newest first) & Only show view all if there is more than 6 competition in each types of competitions
+  const { currentCompetitions, pastCompetitions } = useLoaderData<LoaderData>();
+
   return (
     <>
       <NavigationBar />
@@ -26,51 +71,53 @@ export default function CompetitionIndex() {
           heroImageUrl={heroContent.heroImageUrl}
         />
         <section className="mt-8">
-          <SectionHeader title="Current Competitions" url="current" />
-          <div className="grid grid-cols-3 gap-8">
-            <CompetitionCard
-              title="Deep Learning Artificial Intelligence Summer School 2022 Poster Competition"
-              url="c/test"
-              imageUrl="https://cdn.pixabay.com/photo/2022/06/19/11/07/bird-7271620_1280.jpg"
-              submissionDeadline={new Date("2022-08-01T00:00:00.000Z")}
+          <SectionHeader
+            title="Current Competitions"
+            url={currentCompetitions.length === 6 ? "current" : undefined}
+          />
+          {currentCompetitions.length === 0 ? (
+            <EmptyState
+              iconContent={<QuestionMarkCircleIcon className="h-20 w-20" />}
+              text="There is no current competitions currently available."
             />
-            <CompetitionCard
-              title="Deep Learning Artificial Intelligence Summer School 2022 Poster Competition"
-              url="c/test"
-              imageUrl="https://cdn.pixabay.com/photo/2022/06/19/11/07/bird-7271620_1280.jpg"
-              submissionDeadline={new Date("2022-08-01T00:00:00.000Z")}
-            />
-            <CompetitionCard
-              title="Deep Learning Artificial Intelligence Summer School 2022 Poster Competition"
-              url="c/test"
-              imageUrl="https://cdn.pixabay.com/photo/2022/06/19/11/07/bird-7271620_1280.jpg"
-              submissionDeadline={new Date("2022-08-01T00:00:00.000Z")}
-            />
-          </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-8">
+              {currentCompetitions.map((competition) => (
+                <CompetitionCard
+                  key={competition.id}
+                  title={competition.title}
+                  url={`c/${competition.slug}`}
+                  imageUrl={competition.coverImagePath}
+                  submissionDeadline={competition.submissionEnd!}
+                />
+              ))}
+            </div>
+          )}
         </section>
         <Divider className="my-16" />
         <section>
-          <SectionHeader title="Past Competitions" url="past" />
-          <div className="grid grid-cols-3 gap-8">
-            <CompetitionCard
-              title="Deep Learning Artificial Intelligence Summer School 2022 Poster Competition"
-              url="c/test"
-              imageUrl="https://cdn.pixabay.com/photo/2022/07/04/17/16/dove-7301617_1280.jpg"
-              submissionDeadline={new Date("2020-08-01T00:00:00.000Z")}
+          <SectionHeader
+            title="Past Competitions"
+            url={pastCompetitions.length === 6 ? "past" : undefined}
+          />
+          {pastCompetitions.length === 0 ? (
+            <EmptyState
+              iconContent={<QuestionMarkCircleIcon className="h-20 w-20" />}
+              text="There is no past competitions currently available."
             />
-            <CompetitionCard
-              title="Deep Learning Artificial Intelligence Summer School 2022 Poster Competition"
-              url="c/test"
-              imageUrl="https://cdn.pixabay.com/photo/2022/07/04/17/16/dove-7301617_1280.jpg"
-              submissionDeadline={new Date("2020-08-01T00:00:00.000Z")}
-            />
-            <CompetitionCard
-              title="Deep Learning Artificial Intelligence Summer School 2022 Poster Competition"
-              url="c/test"
-              imageUrl="https://cdn.pixabay.com/photo/2022/07/04/17/16/dove-7301617_1280.jpg"
-              submissionDeadline={new Date("2020-08-01T00:00:00.000Z")}
-            />
-          </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-8">
+              {pastCompetitions.map((competition) => (
+                <CompetitionCard
+                  key={competition.id}
+                  title={competition.title}
+                  url={`c/${competition.slug}`}
+                  imageUrl={competition.coverImagePath}
+                  submissionDeadline={competition.submissionEnd!}
+                />
+              ))}
+            </div>
+          )}
         </section>
       </main>
       <Footer />
