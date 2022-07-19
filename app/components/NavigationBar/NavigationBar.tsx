@@ -12,14 +12,14 @@ export default function NavigationBar() {
       <Link to="/">
         <Logo />
       </Link>
-      <ul className="flex flex-wrap items-center justify-between gap-8 text-xl">
+      <ul className="flex flex-wrap items-center justify-between gap-12 text-xl">
+        <li className="hover:underline">
+          <Link to="/competition">Competition</Link>
+        </li>
         {user ? (
           <>
-            <li>
-              Welcome back,{" "}
-              <span className="font-bold">
-                {user.firstName} {user.lastName}
-              </span>
+            <li className="hover:underline">
+              <Link to="/profile">Profile</Link>
             </li>
             <li>
               <Form method="post" action="/logout">
