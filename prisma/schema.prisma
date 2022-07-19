@@ -1,8 +1,194 @@
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 generator client {
   provider = "prisma-client-js"
+}
+
+model User {
+  id String @id @default(cuid())
+
+  email String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  firstName String
+  lastName  String
+
+  password Password?
+
+  posters               Poster[]
+  CompetitionOrganizer  CompetitionOrganizer[]
+  Vote                  Vote[]
+  AdminUser             AdminUser[]
+  RegisteredCompetition RegisteredCompetition[]
+}
+
+model Password {
+  hash   String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String @unique
+}
+
+model Competition {
+  id   String @id @default(cuid())
+  slug String @unique
+
+  title          String
+  description    String
+  coverImagePath String?
+
+  viewingPrivacy     ViewingPrivacy
+  submissionPrivacy  SubmissionPrivacy
+  submissionPolicy   SubmissionPolicy
+  votingPrivacy      VotingPrivacy
+  acceptedPosterType AcceptedPosterType
+  teamSubmission     TeamSubmission
+
+  maxNumPoster   Int?
+  maxTeamSize    Int?
+  viewingCode    String?
+  submissionCode String?
+  votingCode     String?
+
+  submissionStart      DateTime?
+  submissionEnd        DateTime?
+  votingStart          DateTime?
+  votingEnd            DateTime?
+  rankAnnouncementDate DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  posters               Poster[]
+  CompetitionOrganizer  CompetitionOrganizer[]
+  Vote                  Vote[]
+  RegisteredCompetition RegisteredCompetition[]
+}
+
+enum ViewingPrivacy {
+  DISABLED
+  PUBLIC
+  LIMITED
+}
+
+enum SubmissionPrivacy {
+  DISABLED
+  PUBLIC
+  LIMITED
+}
+
+enum SubmissionPolicy {
+  NONE
+  REQUIRE_APPROVAL
+}
+
+enum VotingPrivacy {
+  DISABLED
+  PUBLIC
+  LIMITED
+}
+
+enum AcceptedPosterType {
+  IMAGE
+  IMAGE_AR
+}
+
+enum TeamSubmission {
+  DISABLED
+  ENABLED
+}
+
+model RegisteredCompetition {
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  competitionId String
+  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, competitionId])
+}
+
+model CompetitionOrganizer {
+  organizerId   String
+  user          User        @relation(fields: [organizerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  competitionId String
+  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([organizerId, competitionId])
+}
+
+model Poster {
+  id   String @id @default(cuid())
+  slug String @unique
+
+  title           String
+  description     String
+  posterImagePath String
+  posterUrl       String?
+  videoUrl        String?
+  authors         String[]
+
+  competitionId String
+  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  hasAREnabled Boolean
+  markings     ARMarking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Vote      Vote[]
+}
+
+model ARMarking {
+  id String @id @default(cuid())
+
+  markingImagePath    String
+  associatedMediaType MarkingMediaType
+  associatedMediaPath String
+  poster              Poster?          @relation(fields: [posterId], references: [id])
+  posterId            String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum MarkingMediaType {
+  IMAGE
+  TEXT
+  THREE_D_MODEL
+}
+
+model Vote {
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  posterId      String
+  poster        Poster      @relation(fields: [posterId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  competitionId String
+  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  score Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@id([userId, posterId, competitionId])
+}
+
+model AdminUser {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
