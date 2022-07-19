@@ -30,7 +30,7 @@ export default function CompetitionCard({
           <p className="mt-6 mb-4 self-end">
             Submission deadline{" "}
             <span className="font-bold">
-              {formatDateTimeString((submissionDeadline))}
+              {formatDateTimeString(new Date(submissionDeadline))}
             </span>
           </p>
         )
