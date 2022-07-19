@@ -5,6 +5,7 @@ import { Cropper } from "react-cropper";
 import Divider from "../Divider/Divider";
 import FileUploadInput from "../FileUploadInput/FileUploadInput";
 import ImageListInputItem from "./ImageListInputItem";
+import { MarkingMediaType } from "@prisma/client";
 import { PlusIcon } from "@heroicons/react/outline";
 import SelectInput from "../SelectInput/SelectInput";
 import TextInput from "../TextInput/TextInput";
@@ -17,16 +18,10 @@ type ImageListInputProps = {
   maxLength?: number;
 };
 
-export enum MediaType {
-  IMAGE = "Image",
-  TEXT = "Text",
-  THREE_D_MODEL = "3D Model",
-}
-
 export type Marking = {
   id: number;
   markingImagePath: string;
-  mediaType: MediaType;
+  mediaType: MarkingMediaType;
   mediaPath: string;
 };
 
@@ -38,13 +33,16 @@ export default function ImageListInput({
   addNewLabelText,
 }: ImageListInputProps) {
   //TODO: Refactor duplicate code with ImageListInputItem
-  const [selectedMediaType, setSelectedMediaType] = useState(MediaType.IMAGE);
+  const [selectedMediaType, setSelectedMediaType] = useState<MarkingMediaType>(
+    MarkingMediaType.IMAGE
+  );
   const [isAdding, setIsAdding] = useState(false);
   const [listItems, setListItems] = useState<Marking[]>([]);
+  const [text, setText] = useState("");
   const cropperRef = useRef<HTMLImageElement>(null);
 
   const onMediaTypeChange = (mediaType: string) => {
-    setSelectedMediaType(mediaType as MediaType);
+    setSelectedMediaType(mediaType as MarkingMediaType);
   };
 
   const onAddNewItem = (marking: Marking) => {
@@ -101,24 +99,26 @@ export default function ImageListInput({
             />
             <SelectInput
               labelText="Associated Media Type"
-              choices={Object.values(MediaType)}
+              choices={Object.values(MarkingMediaType)}
               selectedChoice={selectedMediaType}
               setSelectedChoice={onMediaTypeChange}
             />
-            {selectedMediaType === MediaType.IMAGE && (
+            {selectedMediaType === MarkingMediaType.IMAGE && (
               <FileUploadInput
                 id="media-image"
                 type="image"
                 callToActionText="Upload Image Associated with this Marking"
               />
             )}
-            {selectedMediaType === MediaType.TEXT && (
+            {selectedMediaType === MarkingMediaType.TEXT && (
               <TextInput
                 id="media-text"
                 labelText="Type Text Associated with this Marking"
+                value={text}
+                setValue={setText}
               />
             )}
-            {selectedMediaType === MediaType.THREE_D_MODEL && (
+            {selectedMediaType === MarkingMediaType.THREE_D_MODEL && (
               <FileUploadInput
                 id="media-model"
                 type="model"
@@ -139,7 +139,7 @@ export default function ImageListInput({
                     id: 0,
                     markingImagePath:
                       "https://cdn.pixabay.com/photo/2022/05/24/04/38/study-7217599_1280.jpg",
-                    mediaType: MediaType.IMAGE,
+                    mediaType: MarkingMediaType.IMAGE,
                     mediaPath:
                       "https://cdn.pixabay.com/photo/2022/05/24/04/38/study-7217599_1280.jpg",
                   });

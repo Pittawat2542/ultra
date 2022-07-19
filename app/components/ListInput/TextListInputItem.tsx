@@ -34,6 +34,7 @@ export default function TextListInputItem({
                 <TextInput
                   className="my-0 mr-4 w-full min-w-[250px]"
                   value={text}
+                  setValue={(_) => {}}
                   inputRef={editItemRef}
                   id={`edit-${id}-${text}`}
                   maxLength={maxLength}
@@ -62,15 +63,17 @@ export default function TextListInputItem({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {!isEditing && <button
-            onClick={(e) => {
-              e.preventDefault();
-              setIsEditing(true);
-            }}
-            className="flex items-center rounded px-4 py-1 transition hover:bg-white hover:bg-opacity-30 focus:bg-opacity-30"
-          >
-            <PencilIcon className="mr-2 h-5 w-5" /> Edit
-          </button>}
+          {!isEditing && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                setIsEditing(true);
+              }}
+              className="flex items-center rounded px-4 py-1 transition hover:bg-white hover:bg-opacity-30 focus:bg-opacity-30"
+            >
+              <PencilIcon className="mr-2 h-5 w-5" /> Edit
+            </button>
+          )}
           <button
             onClick={(e) => {
               e.preventDefault();

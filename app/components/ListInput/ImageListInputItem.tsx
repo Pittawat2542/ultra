@@ -1,4 +1,3 @@
-import { Marking, MediaType } from "./ImageListInput";
 import { PencilIcon, TrashIcon } from "@heroicons/react/outline";
 import { useRef, useState } from "react";
 
@@ -6,6 +5,8 @@ import Button from "../Button/Button";
 import { Cropper } from "react-cropper";
 import Divider from "../Divider/Divider";
 import FileUploadInput from "../FileUploadInput/FileUploadInput";
+import type { Marking } from "./ImageListInput";
+import { MarkingMediaType } from "@prisma/client";
 import SelectInput from "../SelectInput/SelectInput";
 import TextInput from "../TextInput/TextInput";
 
@@ -27,9 +28,10 @@ export default function ImageListInputItem({
   const editItemRef = useRef() as React.MutableRefObject<HTMLInputElement>;
   const [isEditing, setIsEditing] = useState(false);
   const cropperRef = useRef<HTMLImageElement>(null);
-  const [selectedMediaType, setSelectedMediaType] = useState(
-    Object.values(MediaType)[0]
+  const [selectedMediaType, setSelectedMediaType] = useState<MarkingMediaType>(
+    MarkingMediaType.IMAGE
   );
+  const [text, setText] = useState("");
 
   const onCrop = () => {
     const imageElement: any = cropperRef?.current;
@@ -38,7 +40,7 @@ export default function ImageListInputItem({
   };
 
   const onMediaTypeChange = (mediaType: string) => {
-    setSelectedMediaType(mediaType as MediaType);
+    setSelectedMediaType(mediaType as MarkingMediaType);
   };
 
   return (
@@ -56,30 +58,30 @@ export default function ImageListInputItem({
                     crop={onCrop}
                     ref={cropperRef}
                   />
-                  <label className="flex w-1/4 items-center" htmlFor="">
-                    <span className="text-bold mr-4 min-w-fit">
-                      Associated Media Type
-                    </span>
-                    <SelectInput
-                      choices={Object.values(MediaType)}
-                      selectedChoice={selectedMediaType}
-                      setSelectedChoice={onMediaTypeChange}
-                    />
-                  </label>
-                  {selectedMediaType === MediaType.IMAGE && (
+
+                  <SelectInput
+                    labelText="Associated Media Type"
+                    choices={Object.values(MarkingMediaType)}
+                    selectedChoice={selectedMediaType}
+                    setSelectedChoice={onMediaTypeChange}
+                  />
+
+                  {selectedMediaType === MarkingMediaType.IMAGE && (
                     <FileUploadInput
                       id="media-image"
                       type="image"
                       callToActionText="Upload Image Associated with this Marking"
                     />
                   )}
-                  {selectedMediaType === MediaType.TEXT && (
+                  {selectedMediaType === MarkingMediaType.TEXT && (
                     <TextInput
                       id="media-text"
                       labelText="Type Text Associated with this Marking"
+                      value={text}
+                      setValue={setText}
                     />
                   )}
-                  {selectedMediaType === MediaType.THREE_D_MODEL && (
+                  {selectedMediaType === MarkingMediaType.THREE_D_MODEL && (
                     <FileUploadInput
                       id="media-model"
                       type="model"
@@ -100,7 +102,7 @@ export default function ImageListInputItem({
                           id: 0,
                           markingImagePath:
                             "https://cdn.pixabay.com/photo/2022/05/24/04/38/study-7217599_1280.jpg",
-                          mediaType: MediaType.IMAGE,
+                          mediaType: MarkingMediaType.IMAGE,
                           mediaPath:
                             "https://cdn.pixabay.com/photo/2022/05/24/04/38/study-7217599_1280.jpg",
                         });
@@ -136,15 +138,17 @@ export default function ImageListInputItem({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {!isEditing && <button
-            onClick={(e) => {
-              e.preventDefault();
-              setIsEditing(true);
-            }}
-            className="flex items-center rounded px-4 py-1 transition hover:bg-white hover:bg-opacity-30 focus:bg-opacity-30"
-          >
-            <PencilIcon className="mr-2 h-5 w-5" /> Edit
-          </button>}
+          {!isEditing && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                setIsEditing(true);
+              }}
+              className="flex items-center rounded px-4 py-1 transition hover:bg-white hover:bg-opacity-30 focus:bg-opacity-30"
+            >
+              <PencilIcon className="mr-2 h-5 w-5" /> Edit
+            </button>
+          )}
           <button
             onClick={(e) => {
               e.preventDefault();

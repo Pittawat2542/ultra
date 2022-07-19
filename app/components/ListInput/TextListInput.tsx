@@ -24,6 +24,7 @@ export default function TextListInput({
   //TODO: Refactor duplicate code with TextListInputItem
   const [isAdding, setIsAdding] = useState(false);
   const [listItems, setListItems] = useState<string[]>([]);
+  const [newText, setNewText] = useState("");
   const addNewItemRef = useRef() as React.MutableRefObject<HTMLInputElement>;
 
   const onAddNewItem = (text: string) => {
@@ -77,6 +78,8 @@ export default function TextListInput({
               labelText={`Add New ${addNewLabelText}`}
               maxLength={maxLength}
               isRequired={true}
+              value={newText}
+              setValue={setNewText}
             />
             <div className="flex justify-end gap-4">
               <Button
