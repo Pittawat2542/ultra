@@ -1,3 +1,8 @@
+import {
+  getCurrentCompetitions,
+  getPastCompetitions,
+} from "~/models/competition.server";
+
 import type { Competition } from "@prisma/client";
 import CompetitionCard from "~/components/Competitions/CompetitionCard/CompetitionCard";
 import Divider from "~/components/Divider/Divider";
@@ -27,33 +32,9 @@ const heroContent = {
 };
 
 export const loader: LoaderFunction = async () => {
-  const currentCompetitions = await prisma.competition.findMany({
-    where: {
-      viewingPrivacy: "PUBLIC",
-      submissionPrivacy: "PUBLIC",
-      submissionEnd: {
-        gte: new Date(),
-      },
-    },
-    take: 6,
-    orderBy: {
-      submissionEnd: "desc",
-    },
-  });
+  const currentCompetitions = await getCurrentCompetitions(true);
 
-  const pastCompetitions = await prisma.competition.findMany({
-    where: {
-      viewingPrivacy: "PUBLIC",
-      submissionPrivacy: "PUBLIC",
-      submissionEnd: {
-        lte: new Date(),
-      },
-    },
-    take: 6,
-    orderBy: {
-      submissionEnd: "desc",
-    },
-  });
+  const pastCompetitions = await getPastCompetitions(true);
 
   return json<LoaderData>({ currentCompetitions, pastCompetitions });
 };

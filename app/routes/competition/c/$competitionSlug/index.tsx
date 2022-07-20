@@ -21,8 +21,10 @@ import NavigationBar from "~/components/NavigationBar/NavigationBar";
 import PageHeader from "~/components/Competitions/PageHeader/PageHeader";
 import PosterCard from "~/components/Competitions/PosterCard/PosterCard";
 import { formatDateTimeString } from "~/utils/time";
+import { getCompetitionBySlug } from "~/models/competition.server";
+import { getPostersByCompetitionId } from "~/models/poster.server";
+import invariant from "tiny-invariant";
 import { json } from "@remix-run/node";
-import { prisma } from "~/db.server";
 
 type LoaderData = {
   competition: Competition;
@@ -31,11 +33,10 @@ type LoaderData = {
 
 export const loader: LoaderFunction = async ({ params }) => {
   const { competitionSlug } = params;
-  const competition = await prisma.competition.findUnique({
-    where: {
-      slug: competitionSlug,
-    },
-  });
+
+  invariant(competitionSlug, "Competition slug is not found.");
+
+  const competition = await getCompetitionBySlug(competitionSlug);
 
   if (!competition) {
     throw new Response("Not Found", {
@@ -43,11 +44,7 @@ export const loader: LoaderFunction = async ({ params }) => {
     });
   }
 
-  const posters = await prisma.poster.findMany({
-    where: {
-      competitionId: competition.id,
-    },
-  });
+  const posters = await getPostersByCompetitionId(competition.id);
 
   return json<LoaderData>({ competition, posters });
 };
