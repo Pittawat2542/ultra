@@ -1,16 +1,49 @@
-import { Form, Link } from "@remix-run/react";
+import { Form, Link, useLoaderData } from "@remix-run/react";
 
 import Button from "~/components/Button/Button";
+import type { Competition } from "@prisma/client";
 import Divider from "~/components/Divider/Divider";
 import FileUploadInput from "~/components/FileUploadInput/FileUploadInput";
 import Footer from "~/components/Footer/Footer";
+import type { LoaderFunction } from "@remix-run/node";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
 import PageHeader from "~/components/Competitions/PageHeader/PageHeader";
 import TextArea from "~/components/TextInput/TextArea";
 import TextInput from "~/components/TextInput/TextInput";
 import TextListInput from "~/components/ListInput/TextListInput";
+import { getCompetitionBySlug } from "~/models/competition.server";
+import invariant from "tiny-invariant";
+import { json } from "@remix-run/node";
+import { useState } from "react";
+
+type LoaderData = {
+  competition: Competition;
+};
+
+export const loader: LoaderFunction = async ({ params }) => {
+  const { competitionSlug } = params;
+
+  invariant(competitionSlug, "Competition slug is not found.");
+
+  const competition = await getCompetitionBySlug(competitionSlug);
+
+  if (!competition) {
+    throw new Response("Not Found", {
+      status: 404,
+    });
+  }
+
+  return json<LoaderData>({ competition });
+};
 
 export default function PosterSubmission() {
+  //TODO: Submit data to back-end
+  const { competition } = useLoaderData<LoaderData>();
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [posterUrl, setPosterUrl] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
+
   return (
     <>
       <NavigationBar />
@@ -23,10 +56,9 @@ export default function PosterSubmission() {
                 As a part of{" "}
                 <a
                   className="ml-1 font-serif text-2xl font-bold hover:underline"
-                  href="/competition/c/test"
+                  href={`/competition/c/${competition.slug}`}
                 >
-                  Deep Learning Artificial Intelligence Summer School 2022
-                  Poster Competition
+                  {competition.title}
                 </a>
               </p>
             }
@@ -44,26 +76,36 @@ export default function PosterSubmission() {
               id="title"
               isRequired={true}
               maxLength={250}
+              value={title}
+              setValue={setTitle}
             />
             <TextArea
               labelText="Abstract"
               id="abstract"
               isRequired={true}
               maxLength={2500}
+              value={description}
+              setValue={setDescription}
             />
-            <TextListInput
-              labelText="Author(s)"
-              isRequired={true}
-              addNewLabelText="Author"
-              maxItems={1}
-            />
+            {competition.teamSubmission === "ENABLED" && (
+              <TextListInput
+                labelText="Author(s)"
+                isRequired={true}
+                addNewLabelText="Author"
+                maxItems={competition.maxTeamSize ?? 2}
+              />
+            )}
             <TextInput
               labelText="URL Link to Original Poster File"
               id="poster-url"
+              value={posterUrl}
+              setValue={setPosterUrl}
             />
             <TextInput
               labelText="URL Link to Video Presentation"
               id="video-url"
+              value={videoUrl}
+              setValue={setVideoUrl}
             />
             <Divider className="mt-4 mb-6" />
             <div className="flex justify-end gap-8">
