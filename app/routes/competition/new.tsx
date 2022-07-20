@@ -1,3 +1,13 @@
+import {
+  AcceptedPosterType,
+  SubmissionPolicy,
+  SubmissionPrivacy,
+  TeamSubmission,
+  ViewingPrivacy,
+  VotingPrivacy,
+} from "@prisma/client";
+import type { ActionArgs, LinksFunction } from "@remix-run/node";
+
 import Button from "~/components/Button/Button";
 import DateInput from "~/components/DateInput/DateInput";
 import Divider from "~/components/Divider/Divider";
@@ -11,59 +21,75 @@ import TextArea from "~/components/TextInput/TextArea";
 import TextInput from "~/components/TextInput/TextInput";
 import TextListInput from "~/components/ListInput/TextListInput";
 import TimeInput from "~/components/TimeInput/TimeInput";
+import moment from "moment";
 import { useState } from "react";
 
-enum ViewingPrivacy {
-  DISABLED = "Disabled",
-  PUBLIC = "Public",
-  LIMITED = "Limited",
-}
+export const links: LinksFunction = () => {
+  return [
+    {
+      rel: "stylesheet",
+      href: "https://cdnjs.cloudflare.com/ajax/libs/filepond/4.30.4/filepond.min.css",
+    },
+    {
+      rel: "stylesheet",
+      href: "https://cdn.jsdelivr.net/npm/filepond-plugin-image-preview@4.6.11/dist/filepond-plugin-image-preview.css",
+    },
+  ];
+};
 
-enum SubmissionPrivacy {
-  DISABLED = "Disabled",
-  PUBLIC = "Public",
-  LIMITED = "Limited",
-}
-
-enum SubmissionPolicy {
-  NONE = "None",
-  REQUIRE_APPROVAL = "Require Approval",
-}
-
-enum VotingPrivacy {
-  DISABLED = "Disabled",
-  PUBLIC = "Public",
-  LIMITED = "Limited",
-}
-
-enum PosterType {
-  IMAGE = "Image",
-  IMAGE_AR = "Image and AR",
-}
-
-enum TeamSubmission {
-  DISABLED = "Disabled",
-  ENABLED = "Enabled",
+export async function action({ request }: ActionArgs) {
+  const body = await request.formData();
+  console.log(body);
 }
 
 export default function NewCompetition() {
-  const [selectedViewingPrivacy, setSelectedViewingPrivacy] = useState(
-    ViewingPrivacy.PUBLIC
+  const [title, setTitle] = useState("");
+  const [abstract, setAbstract] = useState("");
+  const [maximumNumberOfSubmittedPoster, setMaximumNumberOfSubmittedPoster] =
+    useState("");
+  const [maximumTeamSize, setMaximumTeamSize] = useState("2");
+  const [viewingCode, setViewingCode] = useState("");
+  const [submissionCode, setSubmissionCode] = useState("");
+  const [votingCode, setVotingCode] = useState("");
+  const [selectedViewingPrivacy, setSelectedViewingPrivacy] =
+    useState<ViewingPrivacy>(ViewingPrivacy.PUBLIC);
+  const [selectedSubmissionPrivacy, setSelectedSubmissionPrivacy] =
+    useState<SubmissionPrivacy>(SubmissionPrivacy.PUBLIC);
+  const [selectedSubmissionPolicy, setSelectedSubmissionPolicy] =
+    useState<SubmissionPolicy>(SubmissionPolicy.NONE);
+  const [selectedVotingPrivacy, setSelectedVotingPrivacy] =
+    useState<VotingPrivacy>(VotingPrivacy.PUBLIC);
+  const [selectedPosterType, setSelectedPosterType] =
+    useState<AcceptedPosterType>(AcceptedPosterType.IMAGE);
+  const [selectedTeamSubmission, setSelectedTeamSubmission] =
+    useState<TeamSubmission>(TeamSubmission.ENABLED);
+  const [submissionStartDate, setSubmissionStartDate] = useState(
+    moment().format("YYYY-MM-DD")
   );
-  const [selectedSubmissionPrivacy, setSelectedSubmissionPrivacy] = useState(
-    SubmissionPrivacy.PUBLIC
+  const [submissionStartTime, setSubmissionStartTime] = useState(
+    moment().format("HH:mm")
   );
-  const [selectedSubmissionPolicy, setSelectedSubmissionPolicy] = useState(
-    SubmissionPolicy.NONE
+  const [submissionEndDate, setSubmissionEndDate] = useState(
+    moment().format("YYYY-MM-DD")
   );
-  const [selectedVotingPrivacy, setSelectedVotingPrivacy] = useState(
-    VotingPrivacy.PUBLIC
+  const [submissionEndTime, setSubmissionEndTime] = useState(
+    moment().format("HH:mm")
   );
-  const [selectedPosterType, setSelectedPosterType] = useState(
-    PosterType.IMAGE
+  const [votingStartDate, setVotingStartDate] = useState(
+    moment().format("YYYY-MM-DD")
   );
-  const [selectedTeamSubmission, setSelectedTeamSubmission] = useState(
-    TeamSubmission.ENABLED
+  const [votingStartTime, setVotingStartTime] = useState(
+    moment().format("HH:mm")
+  );
+  const [votingEndDate, setVotingEndDate] = useState(
+    moment().format("YYYY-MM-DD")
+  );
+  const [votingEndTime, setVotingEndTime] = useState(moment().format("HH:mm"));
+  const [rankAnnouncementDate, setRankAnnouncementDate] = useState(
+    moment().format("YYYY-MM-DD")
+  );
+  const [rankAnnouncementTime, setRankAnnouncementTime] = useState(
+    moment().format("HH:mm")
   );
 
   return (
@@ -72,7 +98,7 @@ export default function NewCompetition() {
       <main className="px-32">
         <section className="mt-8">
           <PageHeader title="Start a New Competition" />
-          <Form>
+          <Form method="post" action="">
             <FileUploadInput
               id="cover-image"
               labelText="Cover Image"
@@ -84,12 +110,16 @@ export default function NewCompetition() {
               id="title"
               isRequired={true}
               maxLength={250}
+              value={title}
+              setValue={setTitle}
             />
             <TextArea
-              labelText="Detail and Rules"
+              labelText="Abstract"
               id="detail"
               isRequired={true}
               maxLength={2500}
+              value={abstract}
+              setValue={setAbstract}
             />
             <TextListInput
               labelText="Organizer(s)"
@@ -111,15 +141,20 @@ export default function NewCompetition() {
               />
               <SelectInput
                 labelText="Poster Type"
-                choices={Object.values(PosterType)}
+                choices={Object.values(AcceptedPosterType)}
                 selectedChoice={selectedPosterType}
                 setSelectedChoice={(posterType: string) =>
-                  setSelectedPosterType(posterType as PosterType)
+                  setSelectedPosterType(posterType as AcceptedPosterType)
                 }
               />
               <label className="flex items-center gap-4">
                 Maximum Number of Submitted Poster
-                <TextInput id="max-number-poster" value="30" />
+                <TextInput
+                  id="max-number-poster"
+                  type="number"
+                  value={maximumNumberOfSubmittedPoster}
+                  setValue={setMaximumNumberOfSubmittedPoster}
+                />
               </label>
             </div>
             <div className="my-4 flex gap-8">
@@ -134,7 +169,12 @@ export default function NewCompetition() {
               {selectedTeamSubmission === TeamSubmission.ENABLED && (
                 <label className="flex items-center gap-4">
                   Maximum Number of Members Per Team
-                  <TextInput id="max-number-per-team" value="3" />
+                  <TextInput
+                    id="max-number-per-team"
+                    type="number"
+                    value={maximumTeamSize}
+                    setValue={setMaximumTeamSize}
+                  />
                 </label>
               )}
             </div>
@@ -179,19 +219,34 @@ export default function NewCompetition() {
               {selectedViewingPrivacy === ViewingPrivacy.LIMITED && (
                 <label className="flex items-center gap-4">
                   Viewing Code
-                  <TextInput id="viewing-code" isRequired={true} />
+                  <TextInput
+                    id="viewing-code"
+                    isRequired={true}
+                    value={viewingCode}
+                    setValue={setViewingCode}
+                  />
                 </label>
               )}
               {selectedSubmissionPrivacy === SubmissionPrivacy.LIMITED && (
                 <label className="flex items-center gap-4">
                   Submission Code
-                  <TextInput id="submission-code" isRequired={true} />
+                  <TextInput
+                    id="submission-code"
+                    isRequired={true}
+                    value={submissionCode}
+                    setValue={setSubmissionCode}
+                  />
                 </label>
               )}
               {selectedVotingPrivacy === VotingPrivacy.LIMITED && (
                 <label className="flex items-center gap-4">
                   Voting Code
-                  <TextInput id="voting-code" isRequired={true} />
+                  <TextInput
+                    id="voting-code"
+                    isRequired={true}
+                    value={votingCode}
+                    setValue={setVotingCode}
+                  />
                 </label>
               )}
             </div>
@@ -200,31 +255,85 @@ export default function NewCompetition() {
             <div className="my-4 flex gap-8">
               <p className="flex items-center font-bold">Submission</p>
               <p className="flex items-center">Start</p>
-              <DateInput id="submission-start-date" />
-              <TimeInput id="submission-start-time" />
+              <DateInput
+                id="submission-start-date"
+                isRequired={true}
+                value={submissionStartDate}
+                setValue={setSubmissionStartDate}
+              />
+              <TimeInput
+                id="submission-start-time"
+                isRequired={true}
+                value={submissionStartTime}
+                setValue={setSubmissionStartTime}
+              />
               <p className="flex items-center">End</p>
-              <DateInput id="submission-end-date" />
-              <TimeInput id="submission-end-time" />
+              <DateInput
+                id="submission-end-date"
+                isRequired={true}
+                value={submissionEndDate}
+                setValue={setSubmissionEndDate}
+              />
+              <TimeInput
+                id="submission-end-time"
+                isRequired={true}
+                value={submissionEndTime}
+                setValue={setSubmissionEndTime}
+              />
             </div>
             {selectedVotingPrivacy !== VotingPrivacy.DISABLED && (
               <div className="my-4 flex gap-8">
                 <p className="flex items-center font-bold">Voting</p>
                 <p className="flex items-center">Start</p>
-                <DateInput id="voting-start-date" />
-                <TimeInput id="voting-start-time" />
+                <DateInput
+                  id="voting-start-date"
+                  isRequired={true}
+                  value={votingStartDate}
+                  setValue={setVotingStartDate}
+                />
+                <TimeInput
+                  id="voting-start-time"
+                  isRequired={true}
+                  value={votingStartTime}
+                  setValue={setVotingStartTime}
+                />
                 <p className="flex items-center">End</p>
-                <DateInput id="voting-end-date" />
-                <TimeInput id="voting-end-time" />
+                <DateInput
+                  id="voting-end-date"
+                  isRequired={true}
+                  value={votingEndDate}
+                  setValue={setVotingEndDate}
+                />
+                <TimeInput
+                  id="voting-end-time"
+                  isRequired={true}
+                  value={votingEndTime}
+                  setValue={setVotingEndTime}
+                />
               </div>
             )}
             <div className="my-4 flex gap-8">
-              <p className="flex items-center font-bold">Ranking Announcement</p>
-              <DateInput id="rank-announce-date" />
-              <TimeInput id="rank-announce-time" />
+              <p className="flex items-center font-bold">
+                Ranking Announcement
+              </p>
+              <DateInput
+                id="rank-announce-date"
+                isRequired={true}
+                value={rankAnnouncementDate}
+                setValue={setRankAnnouncementDate}
+              />
+              <TimeInput
+                id="rank-announce-time"
+                isRequired={true}
+                value={rankAnnouncementTime}
+                setValue={setRankAnnouncementTime}
+              />
             </div>
             <Divider className="my-8" />
             <div className="flex justify-end gap-8">
-              <Button className="w-1/6">Submit</Button>
+              <Button type="submit" className="w-1/6">
+                Submit
+              </Button>
             </div>
           </Form>
         </section>
