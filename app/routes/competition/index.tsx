@@ -14,7 +14,6 @@ import NavigationBar from "~/components/NavigationBar/NavigationBar";
 import { QuestionMarkCircleIcon } from "@heroicons/react/outline";
 import SectionHeader from "~/components/Competitions/SectionHeader/SectionHeader";
 import { json } from "@remix-run/node";
-import { prisma } from "~/db.server";
 import { useLoaderData } from "@remix-run/react";
 
 type LoaderData = {
