@@ -1,5 +1,15 @@
-import { UploadIcon } from "@heroicons/react/outline";
-import { useDropzone } from "react-dropzone";
+import type {
+  ActualFileObject,
+  FilePondFile,
+  FilePondInitialFile,
+} from "filepond";
+import { FilePond, registerPlugin } from "react-filepond";
+import { useEffect, useState } from "react";
+
+import FilePondPluginImageExifOrientation from "filepond-plugin-image-exif-orientation";
+import FilePondPluginImagePreview from "filepond-plugin-image-preview";
+
+registerPlugin(FilePondPluginImageExifOrientation, FilePondPluginImagePreview);
 
 type FileUploadInputProps = {
   isRequired?: boolean;
@@ -18,48 +28,33 @@ export default function FileUploadInput({
   maxNumberOfFiles = 1,
   maxSizeOfFile = 10,
   callToActionText,
-  type
+  type,
 }: FileUploadInputProps) {
-  const { acceptedFiles, fileRejections, getRootProps, getInputProps } =
-    useDropzone({
-      accept: type === "image" ? {
-        "image/jpeg": [],
-        "image/png": [],
-      } : {
-        ".gltf": [],
-        ".glb": [],
-      },
-    });
+  const [files, setFiles] = useState<
+    (FilePondFile | FilePondInitialFile | string | Blob)[]
+  >([]);
 
   return (
-    <label className="my-4 block font-bold" htmlFor="poster-image">
-      {labelText}{" "}
-      {isRequired && <span className="font-normal italic"> (Required)</span>}
-      <div
-        {...getRootProps()}
-        className="mt-2 flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-white px-8 py-16 font-normal hover:bg-white hover:bg-opacity-30 focus:bg-opacity-30"
-      >
-        <input name="poster-image" id="poster-image" {...getInputProps()} />
-        <UploadIcon className="mb-2 h-16 w-16 stroke-1" />
-        <p className="text-xl font-bold">{callToActionText}</p>
-        <p className="mb-3">
-          Drag &amp; Drop to This Area or click to choose from file manager.
-        </p>
-        <p className="italic">
-          <span className="font-bold">Accepted Format:</span> {type === "image" ? ".jpg, .jpeg, .png" : ".gltf, .glb"}
-        </p>
-        <p className="italic">
-          <span className="font-bold">Recommended resolution:</span> ??? x ???,
-        </p>
-        <p className="italic">
-          <span className="font-bold">Maximum number of file:</span>{" "}
-          {maxNumberOfFiles} file
-        </p>
-        <p className="italic">
-          <span className="font-bold">Maximum file size:</span> {maxSizeOfFile}
-          MB
-        </p>
-      </div>
+    <label className="my-4 flex w-full flex-col" htmlFor={id}>
+      {labelText && (
+        <>
+          <span className="font-bold">
+            {labelText}
+            <span className="font-normal italic"> (Required)</span>
+          </span>
+        </>
+      )}
+      <FilePond
+        name={id}
+        id={id}
+        className="mt-2 font-serif"
+        //@ts-ignore
+        files={files}
+        onupdatefiles={setFiles}
+        storeAsFile={true}
+        required={isRequired}
+        maxFiles={maxNumberOfFiles}
+      />
     </label>
   );
 }

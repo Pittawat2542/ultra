@@ -37,14 +37,17 @@
     "@remix-run/serve": "^1.6.5",
     "@remix-run/server-runtime": "^1.6.5",
     "bcryptjs": "^2.4.3",
+    "filepond": "^4.30.4",
+    "filepond-plugin-image-exif-orientation": "^1.0.11",
+    "filepond-plugin-image-preview": "^4.6.11",
     "firebase": "^9.9.0",
     "moment": "^2.29.4",
     "react": "^17.0.2",
     "react-cropper": "^2.1.8",
     "react-device-detect": "^2.2.2",
     "react-dom": "^17.0.2",
-    "react-dropzone": "^14.2.2",
     "react-feather": "^2.0.10",
+    "react-filepond": "^7.1.2",
     "tiny-invariant": "^1.2.0"
   },
   "devDependencies": {
