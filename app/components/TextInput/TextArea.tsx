@@ -17,19 +17,21 @@ export default function TextArea({
 }: TextAreaProps) {
   return (
     <label className="my-4 block font-bold" htmlFor={id}>
-      <span className="flex justify-between">
-        <span>
-          {labelText}
-          {isRequired && (
-            <span className="font-normal italic"> (Required)</span>
+      {labelText && (
+        <span className="flex justify-between">
+          <span>
+            {labelText}
+            {isRequired && (
+              <span className="font-normal italic"> (Required)</span>
+            )}
+          </span>
+          {maxLength && (
+            <span className="text-sm font-normal">
+              {value.length}/{maxLength} characters
+            </span>
           )}
         </span>
-        {maxLength && (
-          <span className="text-sm font-normal">
-            {value.length}/{maxLength} characters
-          </span>
-        )}
-      </span>
+      )}
       <textarea
         value={value}
         onChange={(e) => setValue(e.target.value)}
