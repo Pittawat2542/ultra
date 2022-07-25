@@ -7,10 +7,7 @@ import {
   VotingPrivacy,
 } from "@prisma/client";
 import type { ActionArgs, LinksFunction } from "@remix-run/node";
-import {
-  createNewCompetition,
-  isSlugExist,
-} from "~/models/competition.server";
+import { createNewCompetition, isSlugExist } from "~/models/competition.server";
 import {
   redirect,
   unstable_composeUploadHandlers,
@@ -67,12 +64,12 @@ export async function action({ request }: ActionArgs) {
     uploadHandler
   );
 
+  let coverImagePath = null;
   const image = formData.get("cover-image");
-  if (image && typeof image === "string") {
-    return;
+  if (!(image && typeof image === "string")) {
+    coverImagePath = "/uploads/pictures/" + (image as File)?.name;
   }
 
-  const coverImagePath = "/uploads/pictures/" + (image as File)?.name;
   let title = formData.get("title");
   invariant(title, "title is required");
   title = title.toString();
