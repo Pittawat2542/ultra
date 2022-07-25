@@ -8,7 +8,6 @@ import {
   StarIcon,
   UserGroupIcon,
 } from "@heroicons/react/outline";
-import type { Competition, Poster } from "@prisma/client";
 import { Link, useLoaderData } from "@remix-run/react";
 
 import Button from "~/components/Button/Button";
@@ -16,27 +15,21 @@ import { DEFAULT_COVER_IMAGE } from "~/constants/images";
 import Divider from "~/components/Divider/Divider";
 import EmptyState from "~/components/EmptyState/EmptyState";
 import Footer from "~/components/Footer/Footer";
-import type { LoaderFunction } from "@remix-run/node";
+import type { LoaderArgs } from "@remix-run/node";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
 import PageHeader from "~/components/Competitions/PageHeader/PageHeader";
 import PosterCard from "~/components/Competitions/PosterCard/PosterCard";
 import { formatDateTimeString } from "~/utils/time";
 import { getCompetitionBySlug } from "~/models/competition.server";
-import { getPostersByCompetitionId } from "~/models/poster.server";
 import invariant from "tiny-invariant";
 import { json } from "@remix-run/node";
 
-type LoaderData = {
-  competition: Competition;
-  posters: Poster[];
-};
-
-export const loader: LoaderFunction = async ({ params }) => {
+export const loader = async ({ params }: LoaderArgs) => {
   const { competitionSlug } = params;
 
   invariant(competitionSlug, "Competition slug is not found.");
 
-  const competition = await getCompetitionBySlug(competitionSlug);
+  const competition = await getCompetitionBySlug(competitionSlug, true);
 
   if (!competition) {
     throw new Response("Not Found", {
@@ -44,13 +37,11 @@ export const loader: LoaderFunction = async ({ params }) => {
     });
   }
 
-  const posters = await getPostersByCompetitionId(competition.id);
-
-  return json<LoaderData>({ competition, posters });
+  return json({ competition });
 };
 
 export default function CompetitionDetailIndex() {
-  const { competition, posters } = useLoaderData<LoaderData>();
+  const { competition } = useLoaderData<typeof loader>();
   let hasRankAnnounced = false;
 
   if (competition.votingPrivacy !== "DISABLED") {
@@ -193,7 +184,7 @@ export default function CompetitionDetailIndex() {
           <h2 className="mb-8 font-serif text-4xl font-bold leading-10">
             {hasRankAnnounced ? "Ranking" : "Posters"}
           </h2>
-          {posters.length === 0 ? (
+          {competition.posters.length === 0 ? (
             <EmptyState
               iconContent={<QuestionMarkCircleIcon className="h-20 w-20" />}
               text="There is no poster submitted to this competition."
@@ -204,7 +195,7 @@ export default function CompetitionDetailIndex() {
                 hasRankAnnounced ? "grid-cols-1" : "grid-cols-3"
               } gap-8`}
             >
-              {posters.map((poster) => (
+              {competition.posters.map((poster) => (
                 <PosterCard
                   key={poster.id}
                   title={poster.title}

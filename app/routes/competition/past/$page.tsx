@@ -3,7 +3,6 @@ import {
   getPastCompetitions,
 } from "~/models/competition.server";
 
-import type { Competition } from "@prisma/client";
 import CompetitionCard from "~/components/Competitions/CompetitionCard/CompetitionCard";
 import EmptyState from "~/components/EmptyState/EmptyState";
 import Footer from "~/components/Footer/Footer";
@@ -17,13 +16,6 @@ import invariant from "tiny-invariant";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 
-type LoaderData = {
-  pastCompetitions: Array<Competition>;
-  pastCompetitionCount: number;
-  currentPage: number;
-  totalPage: number;
-};
-
 export const loader = async ({ params }: LoaderArgs) => {
   const { page } = params;
 
@@ -36,7 +28,7 @@ export const loader = async ({ params }: LoaderArgs) => {
     Number.parseInt(page)
   );
 
-  return json<LoaderData>({
+  return json({
     pastCompetitions,
     pastCompetitionCount,
     currentPage: Number.parseInt(page),
@@ -46,7 +38,7 @@ export const loader = async ({ params }: LoaderArgs) => {
 
 export default function PastCompetitions() {
   const { pastCompetitions, pastCompetitionCount, currentPage, totalPage } =
-    useLoaderData<LoaderData>();
+    useLoaderData<typeof loader>();
 
   return (
     <>

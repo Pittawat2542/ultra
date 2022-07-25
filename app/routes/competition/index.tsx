@@ -3,22 +3,23 @@ import {
   getPastCompetitions,
 } from "~/models/competition.server";
 
-import type { Competition } from "@prisma/client";
 import CompetitionCard from "~/components/Competitions/CompetitionCard/CompetitionCard";
 import Divider from "~/components/Divider/Divider";
 import EmptyState from "~/components/EmptyState/EmptyState";
 import Footer from "~/components/Footer/Footer";
 import HeroSection from "~/components/HeroSection/HeroSection";
-import type { LoaderFunction } from "@remix-run/node";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
 import { QuestionMarkCircleIcon } from "@heroicons/react/outline";
 import SectionHeader from "~/components/Competitions/SectionHeader/SectionHeader";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 
-type LoaderData = {
-  currentCompetitions: Array<Competition>;
-  pastCompetitions: Array<Competition>;
+export const loader = async () => {
+  const currentCompetitions = await getCurrentCompetitions(true);
+
+  const pastCompetitions = await getPastCompetitions(true);
+
+  return json({ currentCompetitions, pastCompetitions });
 };
 
 const heroContent = {
@@ -30,16 +31,9 @@ const heroContent = {
   heroImageUrl: "/images/hero-competition.png",
 };
 
-export const loader: LoaderFunction = async () => {
-  const currentCompetitions = await getCurrentCompetitions(true);
-
-  const pastCompetitions = await getPastCompetitions(true);
-
-  return json<LoaderData>({ currentCompetitions, pastCompetitions });
-};
-
 export default function CompetitionIndex() {
-  const { currentCompetitions, pastCompetitions } = useLoaderData<LoaderData>();
+  const { currentCompetitions, pastCompetitions } =
+    useLoaderData<typeof loader>();
 
   return (
     <>

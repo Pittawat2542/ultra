@@ -1,15 +1,8 @@
 import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  QuestionMarkCircleIcon,
-} from "@heroicons/react/outline";
-import { Link, useLoaderData } from "@remix-run/react";
-import {
   getCurrentCompetitions,
   getNumberOfCurrentCompetitions,
 } from "~/models/competition.server";
 
-import type { Competition } from "@prisma/client";
 import CompetitionCard from "~/components/Competitions/CompetitionCard/CompetitionCard";
 import EmptyState from "~/components/EmptyState/EmptyState";
 import Footer from "~/components/Footer/Footer";
@@ -18,15 +11,10 @@ import { NUMBER_OF_ITEMS_PER_PAGE } from "~/constants/pagination";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
 import PageHeader from "~/components/Competitions/PageHeader/PageHeader";
 import Pagination from "~/components/Pagination/Pagination";
+import { QuestionMarkCircleIcon } from "@heroicons/react/outline";
 import invariant from "tiny-invariant";
 import { json } from "@remix-run/node";
-
-type LoaderData = {
-  currentCompetitions: Array<Competition>;
-  currentCompetitionCount: number;
-  currentPage: number;
-  totalPage: number;
-};
+import { useLoaderData } from "@remix-run/react";
 
 export const loader = async ({ params }: LoaderArgs) => {
   const { page } = params;
@@ -40,7 +28,7 @@ export const loader = async ({ params }: LoaderArgs) => {
 
   const currentCompetitionCount = await getNumberOfCurrentCompetitions();
 
-  return json<LoaderData>({
+  return json({
     currentCompetitions,
     currentCompetitionCount,
     currentPage: Number.parseInt(page),
@@ -54,7 +42,7 @@ export default function CurrentCompetitions() {
     currentCompetitionCount,
     currentPage,
     totalPage,
-  } = useLoaderData<LoaderData>();
+  } = useLoaderData<typeof loader>();
 
   return (
     <>

@@ -1,11 +1,10 @@
 import { Form, Link, useLoaderData } from "@remix-run/react";
 
 import Button from "~/components/Button/Button";
-import type { Competition } from "@prisma/client";
 import Divider from "~/components/Divider/Divider";
 import FileUploadInput from "~/components/FileUploadInput/FileUploadInput";
 import Footer from "~/components/Footer/Footer";
-import type { LoaderFunction } from "@remix-run/node";
+import type { LoaderArgs } from "@remix-run/node";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
 import PageHeader from "~/components/Competitions/PageHeader/PageHeader";
 import TextArea from "~/components/TextInput/TextArea";
@@ -16,11 +15,7 @@ import invariant from "tiny-invariant";
 import { json } from "@remix-run/node";
 import { useState } from "react";
 
-type LoaderData = {
-  competition: Competition;
-};
-
-export const loader: LoaderFunction = async ({ params }) => {
+export const loader = async ({ params }: LoaderArgs) => {
   const { competitionSlug } = params;
 
   invariant(competitionSlug, "Competition slug is not found.");
@@ -33,12 +28,13 @@ export const loader: LoaderFunction = async ({ params }) => {
     });
   }
 
-  return json<LoaderData>({ competition });
+  return json({ competition });
 };
 
 export default function PosterSubmission() {
   //TODO: Submit data to back-end
-  const { competition } = useLoaderData<LoaderData>();
+  const { competition } = useLoaderData<typeof loader>();
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [posterUrl, setPosterUrl] = useState("");
