@@ -1,3 +1,4 @@
+import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import {
   ChartBarIcon,
   ClockIcon,
@@ -8,23 +9,33 @@ import {
   StarIcon,
   UserGroupIcon,
 } from "@heroicons/react/outline";
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData, useSubmit } from "@remix-run/react";
+import {
+  isCompetitionRegistered,
+  registerCompetition,
+} from "~/models/registeredCompetitions.server";
 
 import Button from "~/components/Button/Button";
 import { DEFAULT_COVER_IMAGE } from "~/constants/images";
 import Divider from "~/components/Divider/Divider";
 import EmptyState from "~/components/EmptyState/EmptyState";
 import Footer from "~/components/Footer/Footer";
-import type { LoaderArgs } from "@remix-run/node";
+import Modal from "~/components/Modal/Modal";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
 import PageHeader from "~/components/Competitions/PageHeader/PageHeader";
 import PosterCard from "~/components/Competitions/PosterCard/PosterCard";
+import { SubmissionPrivacy } from "@prisma/client";
 import { formatDateTimeString } from "~/utils/time";
 import { getCompetitionBySlug } from "~/models/competition.server";
+import { getPosterByCompetitionIdAndUserId } from "~/models/poster.server";
 import invariant from "tiny-invariant";
 import { json } from "@remix-run/node";
+import { requireUserId } from "~/session.server";
+import { useModal } from "~/hooks/useModal";
 
-export const loader = async ({ params }: LoaderArgs) => {
+export const loader = async ({ params, request }: LoaderArgs) => {
+  const userId = await requireUserId(request);
+
   const { competitionSlug } = params;
 
   invariant(competitionSlug, "Competition slug is not found.");
@@ -37,17 +48,55 @@ export const loader = async ({ params }: LoaderArgs) => {
     });
   }
 
-  return json({ competition });
+  const isRegistered = await isCompetitionRegistered(competition.id, userId);
+  const poster = await getPosterByCompetitionIdAndUserId(
+    competition.id,
+    userId
+  );
+
+  return json({ competition, isRegistered, poster });
+};
+
+export const action = async ({ request }: ActionArgs) => {
+  const userId = await requireUserId(request);
+  const formData = await request.formData();
+  const competitionId = formData.get("competitionId");
+  invariant(competitionId, "Competition id is not found.");
+
+  await registerCompetition(competitionId.toString(), userId);
+  return json({});
 };
 
 export default function CompetitionDetailIndex() {
-  const { competition } = useLoaderData<typeof loader>();
+  const submit = useSubmit();
+  const { closeModal, isOpen, openModal } = useModal();
+  const { competition, isRegistered, poster } = useLoaderData<typeof loader>();
   let hasRankAnnounced = false;
+  let hasSubmissionOpen = false;
+  let hasVotingOpen = false;
+
+  if (competition.submissionPrivacy !== SubmissionPrivacy.DISABLED) {
+    hasSubmissionOpen =
+      new Date(competition.submissionStart!) <= new Date() &&
+      new Date(competition.submissionEnd!) >= new Date();
+  }
 
   if (competition.votingPrivacy !== "DISABLED") {
+    hasVotingOpen =
+      new Date(competition.votingStart!) <= new Date() &&
+      new Date(competition.votingEnd!) >= new Date();
     hasRankAnnounced =
       new Date(competition.rankAnnouncementDate!) >= new Date();
   }
+
+  const onRegisterCompetition = () => {
+    closeModal();
+    const data = new FormData();
+    data.append("competitionId", competition.id);
+    submit(data, {
+      method: "post",
+    });
+  };
 
   //TODO: Define rank calculation logic and supply to the required components
 
@@ -60,17 +109,30 @@ export default function CompetitionDetailIndex() {
             <PageHeader title={competition.title} />
             <div className="flex flex-1 flex-col items-center">
               <img
-                className="rounded-xl object-contain transition group-hover:opacity-70"
+                className="max-h-[450px] w-full rounded-xl object-cover transition group-hover:opacity-70"
                 src={competition.coverImagePath ?? DEFAULT_COVER_IMAGE}
                 alt={`${competition.title} cover`}
               />
               <div className="mt-6 flex w-full justify-between gap-4">
                 <Link className="block w-full" to="ar">
-                  <Button className="w-full">AR Experience</Button>
+                  <Button className="w-full">Explore AR</Button>
                 </Link>
-                <Link className="block w-full" to="submit">
-                  <Button className="w-full">Register</Button>
-                </Link>
+                {!isRegistered && (
+                  <Button className="block w-full" onClick={openModal}>
+                    Register
+                  </Button>
+                )}
+                {isRegistered && !poster && hasSubmissionOpen && (
+                  <Link className="block w-full" to="submit">
+                    <Button className="w-full">Submit Poster</Button>
+                  </Link>
+                )}
+                {isRegistered && !!poster && (
+                  <Link className="block w-full" to={`p/${poster.slug}`}>
+                    <Button className="w-full">View Submission</Button>
+                  </Link>
+                )}
+                {hasVotingOpen && <Button className="w-full">Vote</Button>}
               </div>
             </div>
           </div>
@@ -210,6 +272,14 @@ export default function CompetitionDetailIndex() {
         </section>
       </main>
       <Footer />
+      <Modal
+        closeModal={closeModal}
+        isOpen={isOpen}
+        title="Do you want to register for this competition?"
+        confirmButtonText="Confirm"
+        onCancelButtonClick={closeModal}
+        onConfirmButtonClick={onRegisterCompetition}
+      />
     </>
   );
 }
