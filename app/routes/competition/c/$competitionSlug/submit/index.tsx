@@ -1,4 +1,5 @@
 import { Form, Link, useLoaderData } from "@remix-run/react";
+import { json, redirect } from "@remix-run/node";
 
 import Button from "~/components/Button/Button";
 import Divider from "~/components/Divider/Divider";
@@ -12,10 +13,12 @@ import TextInput from "~/components/Inputs/TextInput";
 import TextListInput from "~/components/ListInput/TextListInput";
 import { getCompetitionBySlug } from "~/models/competition.server";
 import invariant from "tiny-invariant";
-import { json } from "@remix-run/node";
+import { isCompetitionRegistered } from "~/models/registeredCompetitions.server";
+import { requireUserId } from "~/session.server";
 import { useState } from "react";
 
-export const loader = async ({ params }: LoaderArgs) => {
+export const loader = async ({ params, request }: LoaderArgs) => {
+  const userId = await requireUserId(request);
   const { competitionSlug } = params;
 
   invariant(competitionSlug, "Competition slug is not found.");
@@ -26,6 +29,12 @@ export const loader = async ({ params }: LoaderArgs) => {
     throw new Response("Not Found", {
       status: 404,
     });
+  }
+
+  const isRegistered = await isCompetitionRegistered(competition.id, userId);
+
+  if (!isRegistered) {
+    return redirect(`/competition/c/${competition.slug}`);
   }
 
   return json({ competition });

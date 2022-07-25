@@ -1,11 +1,40 @@
+import type { LinksFunction, LoaderArgs } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
+
 import Button from "~/components/Button/Button";
 import Footer from "~/components/Footer/Footer";
 import { Form } from "@remix-run/react";
 import ImageListInput from "~/components/ListInput/ImageListInput";
-import type { LinksFunction } from "@remix-run/server-runtime";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
 import PageHeader from "~/components/Competitions/PageHeader/PageHeader";
 import SectionHeader from "~/components/Competitions/SectionHeader/SectionHeader";
+import { getCompetitionBySlug } from "~/models/competition.server";
+import invariant from "tiny-invariant";
+import { isCompetitionRegistered } from "~/models/registeredCompetitions.server";
+import { requireUserId } from "~/session.server";
+
+export const loader = async ({ params, request }: LoaderArgs) => {
+  const userId = await requireUserId(request);
+  const { competitionSlug } = params;
+
+  invariant(competitionSlug, "Competition slug is not found.");
+
+  const competition = await getCompetitionBySlug(competitionSlug);
+
+  if (!competition) {
+    throw new Response("Not Found", {
+      status: 404,
+    });
+  }
+
+  const isRegistered = await isCompetitionRegistered(competition.id, userId);
+
+  if (!isRegistered) {
+    return redirect(`/competition/c/${competition.slug}`);
+  }
+
+  return json({});
+};
 
 export const links: LinksFunction = () => {
   return [
