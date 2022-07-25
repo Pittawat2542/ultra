@@ -51,7 +51,7 @@ export default function Modal({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white bg-opacity-10 p-12 text-left align-middle shadow-xl backdrop-blur-xl backdrop-filter transition-all">
+              <Dialog.Panel className="w-full max-w-[50%] transform overflow-hidden rounded-2xl bg-white bg-opacity-10 p-12 text-left align-middle shadow-xl backdrop-blur-xl backdrop-filter transition-all">
                 <Dialog.Title
                   as="h3"
                   className="font-serif text-3xl font-bold leading-6"

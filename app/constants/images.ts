@@ -1,1 +1,1 @@
-export const DEFAULT_COVER_IMAGE = "https://cdn.pixabay.com/photo/2022/06/19/11/07/bird-7271620_1280.jpg"
+export const DEFAULT_COVER_IMAGE = "https://cdn.pixabay.com/photo/2015/09/13/05/58/lighthouse-937738_1280.jpg"

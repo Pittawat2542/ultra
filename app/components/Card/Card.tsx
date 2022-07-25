@@ -13,7 +13,7 @@ export default function Card({ url, imageUrl, title, subtitle }: CardProps) {
     <Link to={url}>
       <article className="hover:cursor group flex h-full flex-col rounded-xl bg-white bg-opacity-10 bg-clip-padding p-8 backdrop-blur-xl backdrop-filter transition hover:bg-opacity-30">
         <img
-          className="self-center rounded object-contain transition group-hover:opacity-70"
+          className="h-[300px] w-full self-center rounded object-cover transition group-hover:opacity-70"
           src={imageUrl}
           alt=""
         />
