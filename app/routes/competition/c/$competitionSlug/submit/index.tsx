@@ -84,21 +84,13 @@ export default function PosterSubmission() {
               setValue={setTitle}
             />
             <TextArea
-              labelText="Abstract"
-              id="abstract"
+              labelText="Description"
+              id="description"
               isRequired={true}
               maxLength={2500}
               value={description}
               setValue={setDescription}
             />
-            {competition.teamSubmission === "ENABLED" && (
-              <TextListInput
-                labelText="Author(s)"
-                isRequired={true}
-                addNewLabelText="Author"
-                maxItems={competition.maxTeamSize ?? 2}
-              />
-            )}
             <TextInput
               labelText="URL Link to Original Poster File"
               id="poster-url"
@@ -111,12 +103,32 @@ export default function PosterSubmission() {
               value={videoUrl}
               setValue={setVideoUrl}
             />
+            <input type="hidden" name="competition-id" value={competition.id} />
+            <input
+              type="hidden"
+              name="competition-poster-type"
+              value={competition.acceptedPosterType}
+            />
             <Divider className="mt-4 mb-6" />
             <div className="flex justify-end gap-8">
-              <Button className="w-1/6">Submit</Button>
-              <Link className="w-1/6" to="ar">
-                <Button className="w-full">Add AR Poster</Button>
-              </Link>
+              <Button
+                id="_action"
+                className="w-1/6"
+                value="submit"
+                type="submit"
+              >
+                Submit
+              </Button>
+              {competition.acceptedPosterType === "IMAGE_AR" && (
+                <Button
+                  id="_action"
+                  className="w-1/6"
+                  value="submit_ar}"
+                  type="submit"
+                >
+                  Add AR Poster
+                </Button>
+              )}
             </div>
           </Form>
         </section>

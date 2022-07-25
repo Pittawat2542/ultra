@@ -9,6 +9,7 @@ import NavigationBar from "~/components/NavigationBar/NavigationBar";
 import PageHeader from "~/components/Competitions/PageHeader/PageHeader";
 import SectionHeader from "~/components/Competitions/SectionHeader/SectionHeader";
 import { getCompetitionBySlug } from "~/models/competition.server";
+import { hasPosterSubmitted } from "~/models/poster.server";
 import invariant from "tiny-invariant";
 import { isCompetitionRegistered } from "~/models/registeredCompetitions.server";
 import { requireUserId } from "~/session.server";
@@ -27,9 +28,19 @@ export const loader = async ({ params, request }: LoaderArgs) => {
     });
   }
 
-  const isRegistered = await isCompetitionRegistered(competition.id, userId);
+  if (
+    competition.acceptedPosterType !== "IMAGE_AR" ||
+    competition.submissionPrivacy === "DISABLED" ||
+    new Date(competition.submissionStart!) > new Date() ||
+    new Date(competition.submissionEnd!) < new Date()
+  ) {
+    return redirect(`/competition/c/${competition.slug}`);
+  }
 
-  if (!isRegistered) {
+  const isRegistered = await isCompetitionRegistered(competition.id, userId);
+  const isSubmitted = await hasPosterSubmitted(competition.id, userId);
+
+  if (!isRegistered || !isSubmitted) {
     return redirect(`/competition/c/${competition.slug}`);
   }
 
