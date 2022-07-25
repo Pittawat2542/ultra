@@ -73,7 +73,6 @@ export default function CompetitionDetailIndex() {
   const { competition, isRegistered, poster } = useLoaderData<typeof loader>();
   let hasRankAnnounced = false;
   let hasSubmissionOpen = false;
-  let hasVotingOpen = false;
 
   if (competition.submissionPrivacy !== SubmissionPrivacy.DISABLED) {
     hasSubmissionOpen =
@@ -82,11 +81,8 @@ export default function CompetitionDetailIndex() {
   }
 
   if (competition.votingPrivacy !== "DISABLED") {
-    hasVotingOpen =
-      new Date(competition.votingStart!) <= new Date() &&
-      new Date(competition.votingEnd!) >= new Date();
     hasRankAnnounced =
-      new Date(competition.rankAnnouncementDate!) >= new Date();
+      new Date(competition.rankAnnouncementDate!) <= new Date();
   }
 
   const onRegisterCompetition = () => {
@@ -132,7 +128,6 @@ export default function CompetitionDetailIndex() {
                     <Button className="w-full">View Submission</Button>
                   </Link>
                 )}
-                {hasVotingOpen && <Button className="w-full">Vote</Button>}
               </div>
             </div>
           </div>
