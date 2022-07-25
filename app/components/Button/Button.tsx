@@ -5,6 +5,8 @@ type ButtonProps = {
   children: ReactChild | ReactChild[];
   onClick?: MouseEventHandler;
   type?: "submit";
+  value?: string;
+  id?: string;
 };
 
 export default function Button({
@@ -12,11 +14,16 @@ export default function Button({
   className,
   onClick,
   type,
+  value,
+  id,
 }: ButtonProps) {
   return (
     <button
       onClick={onClick}
       type={type}
+      value={value}
+      id={id}
+      name={id}
       className={`rounded-lg bg-white bg-opacity-10 bg-clip-padding px-6 py-2 font-serif text-2xl font-bold tracking-wide backdrop-blur-xl backdrop-filter transition hover:bg-opacity-30 ${className}`}
     >
       {children}

@@ -1,4 +1,4 @@
-import type { Competition, User } from "@prisma/client";
+import type { Competition, Poster, User } from "@prisma/client";
 
 import { prisma } from "~/db.server";
 
@@ -28,4 +28,20 @@ export async function getPosterByCompetitionIdAndUserId(competitionId: Competiti
       userId: userId,
     }
   })
+}
+
+export async function createNewPoster(posterData: (Omit<Poster, "id" | "createdAt" | "updatedAt">)) {
+  return prisma.poster.create({
+    data: posterData,
+  })
+}
+
+export async function isSlugExist(posterSlug: Poster["slug"]) {
+  const posterCount = await prisma.poster.count({
+    where: {
+      slug: posterSlug,
+    }
+  })
+
+  return posterCount === 0
 }

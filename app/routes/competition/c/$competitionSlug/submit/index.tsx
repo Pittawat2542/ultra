@@ -1,5 +1,18 @@
 import { Form, Link, useLoaderData } from "@remix-run/react";
-import { json, redirect } from "@remix-run/node";
+import {
+  createNewPoster,
+  hasPosterSubmitted,
+  isSlugExist,
+} from "~/models/poster.server";
+import {
+  json,
+  redirect,
+  unstable_composeUploadHandlers,
+  unstable_createFileUploadHandler,
+  unstable_createMemoryUploadHandler,
+  unstable_parseMultipartFormData,
+} from "@remix-run/node";
+import { requireUser, requireUserId } from "~/session.server";
 
 import Button from "~/components/Button/Button";
 import Divider from "~/components/Divider/Divider";
@@ -8,13 +21,13 @@ import Footer from "~/components/Footer/Footer";
 import type { LoaderArgs } from "@remix-run/node";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
 import PageHeader from "~/components/Competitions/PageHeader/PageHeader";
+import ShortUniqueId from "short-unique-id";
 import TextArea from "~/components/Inputs/TextArea";
 import TextInput from "~/components/Inputs/TextInput";
-import TextListInput from "~/components/ListInput/TextListInput";
 import { getCompetitionBySlug } from "~/models/competition.server";
 import invariant from "tiny-invariant";
 import { isCompetitionRegistered } from "~/models/registeredCompetitions.server";
-import { requireUserId } from "~/session.server";
+import slugify from "slug";
 import { useState } from "react";
 
 export const loader = async ({ params, request }: LoaderArgs) => {
@@ -31,17 +44,93 @@ export const loader = async ({ params, request }: LoaderArgs) => {
     });
   }
 
-  const isRegistered = await isCompetitionRegistered(competition.id, userId);
+  if (
+    competition.submissionPrivacy === "DISABLED" ||
+    new Date(competition.submissionStart!) > new Date() ||
+    new Date(competition.submissionEnd!) < new Date()
+  ) {
+    return redirect(`/competition/c/${competition.slug}`);
+  }
 
-  if (!isRegistered) {
+  const isRegistered = await isCompetitionRegistered(competition.id, userId);
+  const isSubmitted = await hasPosterSubmitted(competition.id, userId);
+
+  if (!isRegistered || isSubmitted) {
     return redirect(`/competition/c/${competition.slug}`);
   }
 
   return json({ competition });
 };
 
+export const action = async ({ request, params }: LoaderArgs) => {
+  const user = await requireUser(request);
+  const { competitionSlug } = params;
+
+  invariant(competitionSlug, "Competition slug is not found.");
+
+  const uploadHandler = unstable_composeUploadHandlers(
+    unstable_createFileUploadHandler({
+      directory: "uploads/pictures",
+      maxPartSize: 1000000,
+    }),
+    unstable_createMemoryUploadHandler()
+  );
+
+  const formData = await unstable_parseMultipartFormData(
+    request,
+    uploadHandler
+  );
+
+  const image = formData.get("poster-image");
+  if (image && typeof image === "string") {
+    return json({});
+  }
+  const posterImagePath = "/uploads/pictures/" + (image as File)?.name;
+
+  let title = formData.get("title");
+  invariant(title, "title is required");
+  title = title.toString();
+
+  let slug = slugify(title);
+  const isSlugAvailable = await isSlugExist(slug);
+  if (!isSlugAvailable) {
+    slug = `${slug}-${new ShortUniqueId({ length: 6 })()}`;
+  }
+
+  let description = formData.get("description");
+  invariant(description, "description is required");
+  description = description.toString();
+
+  const posterUrl = formData?.get("poster-url")?.toString() ?? null;
+  const videoUrl = formData?.get("video-url")?.toString() ?? null;
+
+  const competitionId = formData.get("competition-id")!.toString();
+  const competitionPosterType = formData
+    .get("competition-poster-type")!
+    .toString();
+
+  const _action = formData.get("_action")?.toString();
+  const poster = await createNewPoster({
+    title,
+    slug,
+    authors: [`${user.firstName} ${user.lastName}`],
+    description,
+    posterUrl,
+    userId: user.id,
+    videoUrl,
+    competitionId: competitionId,
+    hasAREnabled: competitionPosterType === "IMAGE_AR",
+    posterImagePath,
+  });
+
+  return redirect(
+    _action === "submit"
+      ? `/competition/c/${competitionSlug}/p/${poster.slug}`
+      : `/competition/c/${competitionSlug}/submit/ar`
+  );
+};
+
 export default function PosterSubmission() {
-  //TODO: Submit data to back-end
   const { competition } = useLoaderData<typeof loader>();
 
   const [title, setTitle] = useState("");
@@ -68,7 +157,7 @@ export default function PosterSubmission() {
               </p>
             }
           />
-          <Form>
+          <Form method="post" encType="multipart/form-data">
             <FileUploadInput
               id="poster-image"
               labelText="Poster Image"

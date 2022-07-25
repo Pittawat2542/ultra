@@ -159,6 +159,12 @@ export async function action({ request }: ActionArgs) {
       `${submissionEndDate} ${submissionEndTime}`,
       "YYYY-MM-DD HH:mm"
     ).toDate();
+
+    if (submissionStart > submissionEnd || submissionStart < new Date()) {
+      throw new Error(
+        "Submission start date must be before submission end date"
+      );
+    }
   }
 
   let votingStart = null;
@@ -189,6 +195,14 @@ export async function action({ request }: ActionArgs) {
       `${rankAnnouncementDate} ${rankAnnouncementTime}`,
       "YYYY-MM-DD HH:mm"
     ).toDate();
+
+    if (votingStart > votingEnd || votingStart < new Date()) {
+      throw new Error("Voting start date must be before voting end date");
+    }
+
+    if (votingEnd > rankAnnouncementDate) {
+      throw new Error("Rank can be announced after voting is ended");
+    }
   }
 
   const competition = await createNewCompetition({
