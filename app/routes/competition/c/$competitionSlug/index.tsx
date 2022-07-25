@@ -117,7 +117,7 @@ export default function CompetitionDetailIndex() {
                 <Link className="block w-full" to="ar">
                   <Button className="w-full">Explore AR</Button>
                 </Link>
-                {!isRegistered && (
+                {!isRegistered && hasSubmissionOpen && (
                   <Button className="block w-full" onClick={openModal}>
                     Register
                   </Button>
