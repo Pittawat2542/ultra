@@ -2,13 +2,13 @@ import { Form, Link, useLoaderData } from "@remix-run/react";
 
 import Button from "~/components/Button/Button";
 import Divider from "~/components/Divider/Divider";
-import FileUploadInput from "~/components/FileUploadInput/FileUploadInput";
+import FileUploadInput from "~/components/Inputs/FileUploadInput";
 import Footer from "~/components/Footer/Footer";
 import type { LoaderArgs } from "@remix-run/node";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
 import PageHeader from "~/components/Competitions/PageHeader/PageHeader";
-import TextArea from "~/components/TextInput/TextArea";
-import TextInput from "~/components/TextInput/TextInput";
+import TextArea from "~/components/Inputs/TextArea";
+import TextInput from "~/components/Inputs/TextInput";
 import TextListInput from "~/components/ListInput/TextListInput";
 import { getCompetitionBySlug } from "~/models/competition.server";
 import invariant from "tiny-invariant";
@@ -65,7 +65,6 @@ export default function PosterSubmission() {
               labelText="Poster Image"
               isRequired={true}
               type="image"
-              callToActionText={"Upload Poster Image File"}
             />
             <TextInput
               labelText="Title"

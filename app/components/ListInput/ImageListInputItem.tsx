@@ -4,11 +4,11 @@ import { useRef, useState } from "react";
 import Button from "../Button/Button";
 import { Cropper } from "react-cropper";
 import Divider from "../Divider/Divider";
-import FileUploadInput from "../FileUploadInput/FileUploadInput";
+import FileUploadInput from "../Inputs/FileUploadInput";
 import type { Marking } from "./ImageListInput";
 import { MarkingMediaType } from "@prisma/client";
-import SelectInput from "../SelectInput/SelectInput";
-import TextInput from "../TextInput/TextInput";
+import SelectInput from "../Inputs/SelectInput";
+import TextInput from "../Inputs/TextInput";
 
 type ImageListInputItemProps = {
   id: number;
@@ -67,11 +67,7 @@ export default function ImageListInputItem({
                   />
 
                   {selectedMediaType === MarkingMediaType.IMAGE && (
-                    <FileUploadInput
-                      id="media-image"
-                      type="image"
-                      callToActionText="Upload Image Associated with this Marking"
-                    />
+                    <FileUploadInput id="media-image" type="image" />
                   )}
                   {selectedMediaType === MarkingMediaType.TEXT && (
                     <TextInput
@@ -82,11 +78,7 @@ export default function ImageListInputItem({
                     />
                   )}
                   {selectedMediaType === MarkingMediaType.THREE_D_MODEL && (
-                    <FileUploadInput
-                      id="media-model"
-                      type="model"
-                      callToActionText="Upload Model Associated with this Marking"
-                    />
+                    <FileUploadInput id="media-model" type="model" />
                   )}
                   <div className="mt-4 flex justify-end gap-4">
                     <Button

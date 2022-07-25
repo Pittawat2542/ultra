@@ -8,8 +8,8 @@ import {
 } from "@prisma/client";
 import type { ActionArgs, LinksFunction } from "@remix-run/node";
 import {
-  checkSlugExist,
   createNewCompetition,
+  isSlugExist,
 } from "~/models/competition.server";
 import {
   redirect,
@@ -20,18 +20,18 @@ import {
 } from "@remix-run/node";
 
 import Button from "~/components/Button/Button";
-import DateInput from "~/components/DateInput/DateInput";
+import DateInput from "~/components/Inputs/DateInput";
 import Divider from "~/components/Divider/Divider";
-import FileUploadInput from "~/components/FileUploadInput/FileUploadInput";
+import FileUploadInput from "~/components/Inputs/FileUploadInput";
 import Footer from "~/components/Footer/Footer";
 import { Form } from "@remix-run/react";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
 import PageHeader from "~/components/Competitions/PageHeader/PageHeader";
-import SelectInput from "~/components/SelectInput/SelectInput";
+import SelectInput from "~/components/Inputs/SelectInput";
 import ShortUniqueId from "short-unique-id";
-import TextArea from "~/components/TextInput/TextArea";
-import TextInput from "~/components/TextInput/TextInput";
-import TimeInput from "~/components/TimeInput/TimeInput";
+import TextArea from "~/components/Inputs/TextArea";
+import TextInput from "~/components/Inputs/TextInput";
+import TimeInput from "~/components/Inputs/TimeInput";
 import invariant from "tiny-invariant";
 import moment from "moment";
 import { requireUserId } from "~/session.server";
@@ -78,7 +78,7 @@ export async function action({ request }: ActionArgs) {
   title = title.toString();
 
   let slug = slugify(title);
-  const isSlugAvailable = await checkSlugExist(slug);
+  const isSlugAvailable = await isSlugExist(slug);
   if (!isSlugAvailable) {
     slug = `${slug}-${new ShortUniqueId({ length: 6 })()}`;
   }

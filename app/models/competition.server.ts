@@ -82,7 +82,7 @@ export async function createNewCompetition(competitionData: (Omit<Competition, "
   return competition;
 }
 
-export async function checkSlugExist(competitionSlug: Competition["slug"]) {
+export async function isSlugExist(competitionSlug: Competition["slug"]) {
   const competitionCount = await prisma.competition.count({
     where: {
       slug: competitionSlug,

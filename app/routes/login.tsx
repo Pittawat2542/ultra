@@ -9,7 +9,7 @@ import Button from "~/components/Button/Button";
 import Footer from "~/components/Footer/Footer";
 import HeroSection from "~/components/HeroSection/HeroSection";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
-import TextInput from "~/components/TextInput/TextInput";
+import TextInput from "~/components/Inputs/TextInput";
 import { verifyLogin } from "~/models/user.server";
 
 export async function loader({ request }: LoaderArgs) {

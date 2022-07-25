@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import Button from "../Button/Button";
 import Divider from "../Divider/Divider";
 import { PlusIcon } from "@heroicons/react/outline";
-import TextInput from "../TextInput/TextInput";
+import TextInput from "../Inputs/TextInput";
 import TextListInputItem from "./TextListInputItem";
 
 type TextListInputProps = {
