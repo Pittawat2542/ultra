@@ -1,23 +1,10 @@
-import type {
-  ActualFileObject,
-  FilePondFile,
-  FilePondInitialFile,
-} from "filepond";
-import { FilePond, registerPlugin } from "react-filepond";
-import { useEffect, useState } from "react";
-
-import FilePondPluginImageExifOrientation from "filepond-plugin-image-exif-orientation";
-import FilePondPluginImagePreview from "filepond-plugin-image-preview";
-
-registerPlugin(FilePondPluginImageExifOrientation, FilePondPluginImagePreview);
+import { useRef } from "react";
 
 type FileUploadInputProps = {
   isRequired?: boolean;
   labelText?: string;
   id: string;
-  maxNumberOfFiles?: number;
   maxSizeOfFile?: number;
-  callToActionText: string;
   type: "image" | "model";
 };
 
@@ -25,35 +12,49 @@ export default function FileUploadInput({
   isRequired = false,
   labelText,
   id,
-  maxNumberOfFiles = 1,
   maxSizeOfFile = 10,
-  callToActionText,
   type,
 }: FileUploadInputProps) {
-  const [files, setFiles] = useState<
-    (FilePondFile | FilePondInitialFile | string | Blob)[]
-  >([]);
+  const inputUploadRef = useRef<HTMLInputElement>(null);
+  const previewImageRef = useRef<HTMLImageElement>(null);
+
+  const onUploadedImageChange = () => {
+    const numberOfFile = inputUploadRef?.current?.files?.length ?? 0;
+
+    if (numberOfFile > 0 && numberOfFile < 2) {
+      const file = inputUploadRef.current!.files![0];
+      previewImageRef.current!.src = URL.createObjectURL(file);
+      previewImageRef.current!.classList.remove("hidden")
+    }
+  };
 
   return (
     <label className="my-4 flex w-full flex-col" htmlFor={id}>
       {labelText && (
         <>
-          <span className="font-bold">
+          <span className="mb-2 font-bold">
             {labelText}
-            <span className="font-normal italic"> (Required)</span>
+            {isRequired && (
+              <span className="font-normal italic"> (Required)</span>
+            )}
           </span>
         </>
       )}
-      <FilePond
+
+      <input
+        ref={inputUploadRef}
+        type="file"
         name={id}
         id={id}
-        className="mt-2 font-serif"
-        //@ts-ignore
-        files={files}
-        onupdatefiles={setFiles}
-        storeAsFile={true}
+        accept="image/*"
         required={isRequired}
-        maxFiles={maxNumberOfFiles}
+        onChange={onUploadedImageChange}
+      />
+      <img
+        ref={previewImageRef}
+        id={`${id}-preview`}
+        alt="uploaded preview"
+        className="mt-2 max-h-[300px] object-contain hidden"
       />
     </label>
   );

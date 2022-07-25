@@ -7,6 +7,17 @@ import {
   VotingPrivacy,
 } from "@prisma/client";
 import type { ActionArgs, LinksFunction } from "@remix-run/node";
+import {
+  checkSlugExist,
+  createNewCompetition,
+} from "~/models/competition.server";
+import {
+  redirect,
+  unstable_composeUploadHandlers,
+  unstable_createFileUploadHandler,
+  unstable_createMemoryUploadHandler,
+  unstable_parseMultipartFormData,
+} from "@remix-run/node";
 
 import Button from "~/components/Button/Button";
 import DateInput from "~/components/DateInput/DateInput";
@@ -17,11 +28,14 @@ import { Form } from "@remix-run/react";
 import NavigationBar from "~/components/NavigationBar/NavigationBar";
 import PageHeader from "~/components/Competitions/PageHeader/PageHeader";
 import SelectInput from "~/components/SelectInput/SelectInput";
+import ShortUniqueId from "short-unique-id";
 import TextArea from "~/components/TextInput/TextArea";
 import TextInput from "~/components/TextInput/TextInput";
-import TextListInput from "~/components/ListInput/TextListInput";
 import TimeInput from "~/components/TimeInput/TimeInput";
+import invariant from "tiny-invariant";
 import moment from "moment";
+import { requireUserId } from "~/session.server";
+import slugify from "slug";
 import { useState } from "react";
 
 export const links: LinksFunction = () => {
@@ -38,13 +52,178 @@ export const links: LinksFunction = () => {
 };
 
 export async function action({ request }: ActionArgs) {
-  const body = await request.formData();
-  console.log(body);
+  const userId = await requireUserId(request);
+
+  const uploadHandler = unstable_composeUploadHandlers(
+    unstable_createFileUploadHandler({
+      directory: "uploads/pictures",
+      maxPartSize: 1000000,
+    }),
+    unstable_createMemoryUploadHandler()
+  );
+
+  const formData = await unstable_parseMultipartFormData(
+    request,
+    uploadHandler
+  );
+
+  const image = formData.get("cover-image");
+  if (image && typeof image === "string") {
+    return;
+  }
+
+  const coverImagePath = "/uploads/pictures/" + (image as File)?.name;
+  let title = formData.get("title");
+  invariant(title, "title is required");
+  title = title.toString();
+
+  let slug = slugify(title);
+  const isSlugAvailable = await checkSlugExist(slug);
+  if (!isSlugAvailable) {
+    slug = `${slug}-${new ShortUniqueId({ length: 6 })()}`;
+  }
+
+  let description = formData.get("description");
+  invariant(description, "description is required");
+  description = description.toString();
+
+  const _submissionPolicy = formData.get("submission-policy");
+  invariant(_submissionPolicy, "submission policy is required");
+  const submissionPolicy = _submissionPolicy.toString() as SubmissionPolicy;
+
+  const _posterType = formData.get("poster-type");
+  invariant(_posterType, "poster type is required");
+  const acceptedPosterType = _posterType.toString() as AcceptedPosterType;
+
+  const maxNumPoster = formData.get("max-number-poster")
+    ? Number.parseInt(formData.get("max-number-poster")!.toString())
+    : null;
+
+  const _teamSubmission = formData.get("team-submission");
+  invariant(_teamSubmission, "team submission is required");
+  const teamSubmission = _teamSubmission.toString() as TeamSubmission;
+
+  let maxTeamSize = null;
+  if (teamSubmission === TeamSubmission.ENABLED) {
+    maxTeamSize = formData.get("max-number-per-team");
+    invariant(maxTeamSize, "max team size is required");
+    maxTeamSize = Number.parseInt(maxTeamSize.toString());
+  }
+
+  const _viewingPrivacy = formData.get("viewing-privacy");
+  invariant(_viewingPrivacy, "viewing privacy is required");
+  const viewingPrivacy = _viewingPrivacy.toString() as ViewingPrivacy;
+
+  let viewingCode = null;
+  if (viewingPrivacy === ViewingPrivacy.LIMITED) {
+    viewingCode = formData.get("viewing-code");
+    invariant(viewingCode, "viewing code is required");
+    viewingCode = viewingCode.toString();
+  }
+
+  const _submissionPrivacy = formData.get("submission-privacy");
+  invariant(_submissionPrivacy, "submission privacy is required");
+  const submissionPrivacy = _submissionPrivacy.toString() as SubmissionPrivacy;
+
+  let submissionCode = null;
+  if (submissionPrivacy === SubmissionPrivacy.LIMITED) {
+    submissionCode = formData.get("submission-code");
+    invariant(submissionCode, "submission code is required");
+    submissionCode = submissionCode.toString();
+  }
+
+  const _votingPrivacy = formData.get("voting-privacy");
+  invariant(_votingPrivacy, "voting privacy is required");
+  const votingPrivacy = _votingPrivacy.toString() as VotingPrivacy;
+
+  let votingCode = null;
+  if (votingPrivacy === VotingPrivacy.LIMITED) {
+    votingCode = formData.get("voting-code");
+    invariant(votingCode, "voting code is required");
+    votingCode = votingCode.toString();
+  }
+
+  let submissionStart = null;
+  let submissionEnd = null;
+  if (submissionPrivacy !== SubmissionPrivacy.DISABLED) {
+    let submissionStartDate = formData.get("submission-start-date");
+    invariant(submissionStartDate, "submission start date is required");
+    let submissionStartTime = formData.get("submission-start-time");
+    invariant(submissionStartTime, "submission start time is required");
+    submissionStart = moment(
+      `${submissionStartDate} ${submissionStartTime}`,
+      "YYYY-MM-DD HH:mm"
+    ).toDate();
+    let submissionEndDate = formData.get("submission-end-date");
+    invariant(submissionEndDate, "submission end date is required");
+    let submissionEndTime = formData.get("submission-end-time");
+    invariant(submissionEndTime, "submission end time is required");
+    submissionEnd = moment(
+      `${submissionEndDate} ${submissionEndTime}`,
+      "YYYY-MM-DD HH:mm"
+    ).toDate();
+  }
+
+  let votingStart = null;
+  let votingEnd = null;
+  let rankAnnouncementDate = null;
+  if (votingPrivacy !== VotingPrivacy.DISABLED) {
+    let votingStartDate = formData.get("voting-start-date");
+    invariant(votingStartDate, "voting start date is required");
+    let votingStartTime = formData.get("voting-start-time");
+    invariant(votingStartTime, "voting start time is required");
+    votingStart = moment(
+      `${votingStartDate} ${votingStartTime}`,
+      "YYYY-MM-DD HH:mm"
+    ).toDate();
+    let votingEndDate = formData.get("voting-end-date");
+    invariant(votingEndDate, "voting end date is required");
+    let votingEndTime = formData.get("voting-end-time");
+    invariant(votingEndTime, "voting end time is required");
+    votingEnd = moment(
+      `${votingEndDate} ${votingEndTime}`,
+      "YYYY-MM-DD HH:mm"
+    ).toDate();
+    rankAnnouncementDate = formData.get("rank-announce-date");
+    invariant(rankAnnouncementDate, "rank announcement date is required");
+    let rankAnnouncementTime = formData.get("rank-announce-time");
+    invariant(rankAnnouncementTime, "rank announcement time is required");
+    rankAnnouncementDate = moment(
+      `${rankAnnouncementDate} ${rankAnnouncementTime}`,
+      "YYYY-MM-DD HH:mm"
+    ).toDate();
+  }
+
+  const competition = await createNewCompetition({
+    title,
+    slug,
+    description,
+    coverImagePath,
+    submissionPolicy,
+    acceptedPosterType,
+    maxNumPoster,
+    teamSubmission,
+    maxTeamSize,
+    userId,
+    viewingPrivacy,
+    viewingCode,
+    submissionPrivacy,
+    submissionCode,
+    votingPrivacy,
+    votingCode,
+    submissionStart,
+    submissionEnd,
+    votingStart,
+    votingEnd,
+    rankAnnouncementDate,
+  });
+
+  return redirect(`/competition/c/${competition.slug}`);
 }
 
 export default function NewCompetition() {
   const [title, setTitle] = useState("");
-  const [abstract, setAbstract] = useState("");
+  const [description, setDescription] = useState("");
   const [maximumNumberOfSubmittedPoster, setMaximumNumberOfSubmittedPoster] =
     useState("");
   const [maximumTeamSize, setMaximumTeamSize] = useState("2");
@@ -98,12 +277,11 @@ export default function NewCompetition() {
       <main className="px-32">
         <section className="mt-8">
           <PageHeader title="Start a New Competition" />
-          <Form method="post" action="">
+          <Form method="post" encType="multipart/form-data">
             <FileUploadInput
               id="cover-image"
               labelText="Cover Image"
               type="image"
-              callToActionText={"Upload Cover Image File"}
             />
             <TextInput
               labelText="Title"
@@ -114,17 +292,12 @@ export default function NewCompetition() {
               setValue={setTitle}
             />
             <TextArea
-              labelText="Abstract"
-              id="detail"
+              labelText="Description"
+              id="description"
               isRequired={true}
               maxLength={2500}
-              value={abstract}
-              setValue={setAbstract}
-            />
-            <TextListInput
-              labelText="Organizer(s)"
-              isRequired={true}
-              addNewLabelText="Organizer"
+              value={description}
+              setValue={setDescription}
             />
             <h3 className="mt-8 font-serif text-2xl">General</h3>
             <Divider className="my-2" />
@@ -139,6 +312,11 @@ export default function NewCompetition() {
                   )
                 }
               />
+              <input
+                name="submission-policy"
+                type="hidden"
+                value={selectedSubmissionPolicy}
+              />
               <SelectInput
                 labelText="Poster Type"
                 choices={Object.values(AcceptedPosterType)}
@@ -146,6 +324,11 @@ export default function NewCompetition() {
                 setSelectedChoice={(posterType: string) =>
                   setSelectedPosterType(posterType as AcceptedPosterType)
                 }
+              />
+              <input
+                name="poster-type"
+                type="hidden"
+                value={selectedPosterType}
               />
               <label className="flex items-center gap-4">
                 Maximum Number of Submitted Poster
@@ -165,6 +348,11 @@ export default function NewCompetition() {
                 setSelectedChoice={(teamSubmission: string) =>
                   setSelectedTeamSubmission(teamSubmission as TeamSubmission)
                 }
+              />
+              <input
+                name="team-submission"
+                type="hidden"
+                value={selectedTeamSubmission}
               />
               {selectedTeamSubmission === TeamSubmission.ENABLED && (
                 <label className="flex items-center gap-4">
@@ -189,6 +377,11 @@ export default function NewCompetition() {
                   setSelectedViewingPrivacy(viewingPrivacy as ViewingPrivacy)
                 }
               />
+              <input
+                name="viewing-privacy"
+                type="hidden"
+                value={selectedViewingPrivacy}
+              />
               <SelectInput
                 labelText="Submission Privacy"
                 choices={Object.values(SubmissionPrivacy)}
@@ -199,6 +392,11 @@ export default function NewCompetition() {
                   )
                 }
               />
+              <input
+                name="submission-privacy"
+                type="hidden"
+                value={selectedSubmissionPrivacy}
+              />
               <SelectInput
                 labelText="Voting Privacy"
                 choices={Object.values(VotingPrivacy)}
@@ -206,6 +404,11 @@ export default function NewCompetition() {
                 setSelectedChoice={(votingPrivacy: string) =>
                   setSelectedVotingPrivacy(votingPrivacy as VotingPrivacy)
                 }
+              />
+              <input
+                name="voting-privacy"
+                type="hidden"
+                value={selectedVotingPrivacy}
               />
             </div>
             <div
@@ -282,53 +485,55 @@ export default function NewCompetition() {
               />
             </div>
             {selectedVotingPrivacy !== VotingPrivacy.DISABLED && (
-              <div className="my-4 flex gap-8">
-                <p className="flex items-center font-bold">Voting</p>
-                <p className="flex items-center">Start</p>
-                <DateInput
-                  id="voting-start-date"
-                  isRequired={true}
-                  value={votingStartDate}
-                  setValue={setVotingStartDate}
-                />
-                <TimeInput
-                  id="voting-start-time"
-                  isRequired={true}
-                  value={votingStartTime}
-                  setValue={setVotingStartTime}
-                />
-                <p className="flex items-center">End</p>
-                <DateInput
-                  id="voting-end-date"
-                  isRequired={true}
-                  value={votingEndDate}
-                  setValue={setVotingEndDate}
-                />
-                <TimeInput
-                  id="voting-end-time"
-                  isRequired={true}
-                  value={votingEndTime}
-                  setValue={setVotingEndTime}
-                />
-              </div>
+              <>
+                <div className="my-4 flex gap-8">
+                  <p className="flex items-center font-bold">Voting</p>
+                  <p className="flex items-center">Start</p>
+                  <DateInput
+                    id="voting-start-date"
+                    isRequired={true}
+                    value={votingStartDate}
+                    setValue={setVotingStartDate}
+                  />
+                  <TimeInput
+                    id="voting-start-time"
+                    isRequired={true}
+                    value={votingStartTime}
+                    setValue={setVotingStartTime}
+                  />
+                  <p className="flex items-center">End</p>
+                  <DateInput
+                    id="voting-end-date"
+                    isRequired={true}
+                    value={votingEndDate}
+                    setValue={setVotingEndDate}
+                  />
+                  <TimeInput
+                    id="voting-end-time"
+                    isRequired={true}
+                    value={votingEndTime}
+                    setValue={setVotingEndTime}
+                  />
+                </div>
+                <div className="my-4 flex gap-8">
+                  <p className="flex items-center font-bold">
+                    Ranking Announcement
+                  </p>
+                  <DateInput
+                    id="rank-announce-date"
+                    isRequired={true}
+                    value={rankAnnouncementDate}
+                    setValue={setRankAnnouncementDate}
+                  />
+                  <TimeInput
+                    id="rank-announce-time"
+                    isRequired={true}
+                    value={rankAnnouncementTime}
+                    setValue={setRankAnnouncementTime}
+                  />
+                </div>
+              </>
             )}
-            <div className="my-4 flex gap-8">
-              <p className="flex items-center font-bold">
-                Ranking Announcement
-              </p>
-              <DateInput
-                id="rank-announce-date"
-                isRequired={true}
-                value={rankAnnouncementDate}
-                setValue={setRankAnnouncementDate}
-              />
-              <TimeInput
-                id="rank-announce-time"
-                isRequired={true}
-                value={rankAnnouncementTime}
-                setValue={setRankAnnouncementTime}
-              />
-            </div>
             <Divider className="my-8" />
             <div className="flex justify-end gap-8">
               <Button type="submit" className="w-1/6">
