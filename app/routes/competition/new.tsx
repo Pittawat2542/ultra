@@ -70,9 +70,8 @@ export async function action({ request }: ActionArgs) {
     coverImagePath = "/uploads/pictures/" + (image as File)?.name;
   }
 
-  let title = formData.get("title");
+  const title = formData.get("title")?.toString();
   invariant(title, "title is required");
-  title = title.toString();
 
   let slug = slugify(title);
   const isSlugAvailable = await isSlugExist(slug);
@@ -80,9 +79,8 @@ export async function action({ request }: ActionArgs) {
     slug = `${slug}-${new ShortUniqueId({ length: 6 })()}`;
   }
 
-  let description = formData.get("description");
+  const description = formData.get("description")?.toString();
   invariant(description, "description is required");
-  description = description.toString();
 
   const _submissionPolicy = formData.get("submission-policy");
   invariant(_submissionPolicy, "submission policy is required");

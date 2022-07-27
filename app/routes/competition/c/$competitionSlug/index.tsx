@@ -60,10 +60,10 @@ export const loader = async ({ params, request }: LoaderArgs) => {
 export const action = async ({ request }: ActionArgs) => {
   const userId = await requireUserId(request);
   const formData = await request.formData();
-  const competitionId = formData.get("competitionId");
+  const competitionId = formData.get("competitionId")?.toString();
   invariant(competitionId, "Competition id is not found.");
 
-  await registerCompetition(competitionId.toString(), userId);
+  await registerCompetition(competitionId, userId);
   return json({});
 };
 
@@ -110,9 +110,6 @@ export default function CompetitionDetailIndex() {
                 alt={`${competition.title} cover`}
               />
               <div className="mt-6 flex w-full justify-between gap-4">
-                <Link className="block w-full" to="ar">
-                  <Button className="w-full">Explore AR</Button>
-                </Link>
                 {!isRegistered && hasSubmissionOpen && (
                   <Button className="block w-full" onClick={openModal}>
                     Register

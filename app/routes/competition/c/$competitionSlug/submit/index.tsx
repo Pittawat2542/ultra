@@ -87,9 +87,8 @@ export const action = async ({ request, params }: LoaderArgs) => {
   }
   const posterImagePath = "/uploads/pictures/" + (image as File)?.name;
 
-  let title = formData.get("title");
+  const title = formData.get("title")?.toString();
   invariant(title, "title is required");
-  title = title.toString();
 
   let slug = slugify(title);
   const isSlugAvailable = await isSlugExist(slug);
@@ -97,9 +96,8 @@ export const action = async ({ request, params }: LoaderArgs) => {
     slug = `${slug}-${new ShortUniqueId({ length: 6 })()}`;
   }
 
-  let description = formData.get("description");
+  const description = formData.get("description")?.toString();
   invariant(description, "description is required");
-  description = description.toString();
 
   const posterUrl = formData?.get("poster-url")?.toString() ?? null;
   const videoUrl = formData?.get("video-url")?.toString() ?? null;
