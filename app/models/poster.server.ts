@@ -45,3 +45,14 @@ export async function isSlugExist(posterSlug: Poster["slug"]) {
 
   return posterCount === 0
 }
+
+export async function getPosterBySlug(slug: Poster["slug"]) {
+  return prisma.poster.findUnique({
+    where: {
+      slug,
+    },
+    include: {
+      competition: true,
+    }
+  })
+}
