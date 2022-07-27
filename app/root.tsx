@@ -52,7 +52,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body className="bg-gradient h-full text-white">
+      <body className="bg-gradient stext-white">
         <Outlet />
         <ScrollRestoration />
         <Scripts />
