@@ -10,6 +10,10 @@ export const loader = async ({ params }: LoaderArgs) => {
   invariant(fileName, "fileName is required");
 
   const filePath = path.resolve("uploads", "pictures", fileName);
+  const fileExtension = filePath.split(".").pop();
+  const isJpg = fileExtension === "jpg" || fileExtension === "jpeg";
+  const isPng = fileExtension === "png";
+  const isGif = fileExtension === "gif";
 
   try {
     const file = fs.createReadStream(filePath);
@@ -17,7 +21,13 @@ export const loader = async ({ params }: LoaderArgs) => {
     return new Response(nodeStreamToReadableStream(file), {
       status: 200,
       headers: {
-        "Content-Type": "images/jpeg",
+        "Content-Type": isJpg
+          ? "images/jpeg"
+          : isPng
+          ? "images/png"
+          : isGif
+          ? "images/gif"
+          : "",
       },
     });
   } catch (_) {
