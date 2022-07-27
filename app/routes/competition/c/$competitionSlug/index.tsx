@@ -28,6 +28,7 @@ import { SubmissionPrivacy } from "@prisma/client";
 import { formatDateTimeString } from "~/utils/time";
 import { getCompetitionBySlug } from "~/models/competition.server";
 import { getPosterByCompetitionIdAndUserId } from "~/models/poster.server";
+import { getPosterRanking } from "~/models/vote.server";
 import invariant from "tiny-invariant";
 import { json } from "@remix-run/node";
 import { requireUserId } from "~/session.server";
@@ -48,13 +49,37 @@ export const loader = async ({ params, request }: LoaderArgs) => {
     });
   }
 
+  let ranking;
+  if (competition.votingPrivacy !== "DISABLED") {
+    if (new Date(competition.rankAnnouncementDate!) <= new Date()) {
+      const sumScore = await getPosterRanking(competition.id);
+      const posterIdWithVoteList = sumScore.map((pt) => pt.posterId);
+      const posterIdWithNoVoteList = competition.posters
+        .filter((pt) => !posterIdWithVoteList.includes(pt.id))
+        .map((pt) => pt.id);
+      const allPosters = [
+        ...sumScore,
+        ...posterIdWithNoVoteList.map((id) => ({
+          posterId: id,
+          competitionId: competition.id,
+          _sum: {
+            score: 0,
+          },
+        })),
+      ];
+      ranking = allPosters
+        .sort((a, b) => (b._sum?.score ?? 0) - (a._sum?.score ?? 0))
+        .map((value, index) => ({ ...value, rank: index + 1 }));
+    }
+  }
+
   const isRegistered = await isCompetitionRegistered(competition.id, userId);
   const poster = await getPosterByCompetitionIdAndUserId(
     competition.id,
     userId
   );
 
-  return json({ competition, isRegistered, poster });
+  return json({ competition, isRegistered, poster, ranking });
 };
 
 export const action = async ({ request }: ActionArgs) => {
@@ -70,7 +95,8 @@ export const action = async ({ request }: ActionArgs) => {
 export default function CompetitionDetailIndex() {
   const submit = useSubmit();
   const { closeModal, isOpen, openModal } = useModal();
-  const { competition, isRegistered, poster } = useLoaderData<typeof loader>();
+  const { competition, isRegistered, poster, ranking } =
+    useLoaderData<typeof loader>();
   let hasRankAnnounced = false;
   let hasSubmissionOpen = false;
 
@@ -93,8 +119,6 @@ export default function CompetitionDetailIndex() {
       method: "post",
     });
   };
-
-  //TODO: Define rank calculation logic and supply to the required components
 
   return (
     <>
@@ -249,14 +273,18 @@ export default function CompetitionDetailIndex() {
                 hasRankAnnounced ? "grid-cols-1" : "grid-cols-3"
               } gap-8`}
             >
-              {competition.posters.map((poster) => (
+              {competition.posters.map((pt) => (
                 <PosterCard
-                  key={poster.id}
-                  title={poster.title}
-                  url={`p/${poster.slug}`}
-                  imageUrl={poster.posterImagePath}
-                  authors={poster.authors}
-                  rank={hasRankAnnounced ? 1 : undefined}
+                  key={pt.id}
+                  title={pt.title}
+                  url={`p/${pt.slug}`}
+                  imageUrl={pt.posterImagePath}
+                  authors={pt.authors}
+                  rank={
+                    hasRankAnnounced
+                      ? ranking.find((p) => p.posterId === pt.id)?.rank
+                      : undefined
+                  }
                 />
               ))}
             </div>

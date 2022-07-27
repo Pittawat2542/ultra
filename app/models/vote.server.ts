@@ -1,4 +1,4 @@
-import type { Poster, User, Vote } from "@prisma/client";
+import type { Competition, Poster, User, Vote } from "@prisma/client";
 
 import { prisma } from "~/db.server";
 
@@ -17,4 +17,16 @@ export async function hasVoted(userId: User["id"], posterId: Poster["id"]) {
   })
 
   return count === 1;
+}
+
+export async function getPosterRanking(competitionId: Competition["id"]) {
+  return prisma.vote.groupBy({
+    by: ['competitionId', 'posterId'],
+    _sum: {
+      score: true
+    },
+    having: {
+      competitionId
+    },
+  });
 }
