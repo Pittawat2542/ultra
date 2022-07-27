@@ -7,6 +7,7 @@ import {
 } from "@heroicons/react/outline";
 import { Link, useLoaderData, useSubmit } from "@remix-run/react";
 import { createNewVote, hasVoted as hasUserVoted } from "~/models/vote.server";
+import { getPosterBySlug, hasPosterSubmitted } from "~/models/poster.server";
 
 import Button from "~/components/Button/Button";
 import Divider from "~/components/Divider/Divider";
@@ -16,7 +17,7 @@ import NavigationBar from "~/components/NavigationBar/NavigationBar";
 import PageHeader from "~/components/Competitions/PageHeader/PageHeader";
 import Range from "~/components/Inputs/Range";
 import { formatNames } from "~/utils/string";
-import { getPosterBySlug } from "~/models/poster.server";
+import { hasARMarkingExisted as hasUserARMarkingExisted } from "~/models/arMarking.server";
 import invariant from "tiny-invariant";
 import { json } from "@remix-run/node";
 import { requireUserId } from "~/session.server";
@@ -38,8 +39,9 @@ export const loader = async ({ params, request }: LoaderArgs) => {
   }
 
   const hasVoted = await hasUserVoted(userId, poster.id);
+  const hasSubmitted = await hasPosterSubmitted(poster.competition.id, userId);
 
-  return json({ poster, userId, hasVoted });
+  return json({ poster, userId, hasVoted, hasSubmitted });
 };
 
 export const action = async ({ request }: ActionArgs) => {
@@ -65,7 +67,7 @@ export const action = async ({ request }: ActionArgs) => {
 export default function PosterDetail() {
   const submit = useSubmit();
   const { closeModal, isOpen, openModal } = useModal();
-  const { poster, hasVoted } = useLoaderData<typeof loader>();
+  const { poster, hasVoted, hasSubmitted } = useLoaderData<typeof loader>();
   const [votingScore, setVotingScore] = useState("5");
 
   const onVoting = () => {
@@ -137,8 +139,16 @@ export default function PosterDetail() {
             </div>
             <div className="flex max-w-[30%] flex-1 flex-col justify-between">
               {poster.hasAREnabled && (
-                <Link className="mb-4 w-full" to={`ar`}>
+                <Link className="mb-4 w-full" to="ar">
                   <Button className="w-full">AR Experience</Button>
+                </Link>
+              )}
+              {poster.hasAREnabled && hasSubmitted && (
+                <Link
+                  className="mb-4 w-full"
+                  to={`/competition/c/${poster.competition.slug}/submit/ar`}
+                >
+                  <Button className="w-full">Submit AR Poster</Button>
                 </Link>
               )}
               {poster.competition.votingPrivacy !== "DISABLED" &&
