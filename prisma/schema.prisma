@@ -142,8 +142,9 @@ model Poster {
   userId        String
   user          User        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-  hasAREnabled Boolean
-  markings     ARMarking[]
+  hasAREnabled       Boolean
+  compiledARFilePath String?
+  markings           ARMarking[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -181,6 +182,7 @@ model Vote {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   @@id([userId, posterId, competitionId])
 }
 

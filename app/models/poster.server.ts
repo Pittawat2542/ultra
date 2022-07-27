@@ -30,7 +30,7 @@ export async function getPosterByCompetitionIdAndUserId(competitionId: Competiti
   })
 }
 
-export async function createNewPoster(posterData: (Omit<Poster, "id" | "createdAt" | "updatedAt">)) {
+export async function createNewPoster(posterData: (Omit<Poster, "id" | "compiledARFilePath" | "createdAt" | "updatedAt">)) {
   return prisma.poster.create({
     data: posterData,
   })
