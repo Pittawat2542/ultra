@@ -46,3 +46,14 @@ export async function getAllMarkingTargetImagePaths(posterId: Poster["id"]) {
     }
   });
 }
+
+export async function getAllMarkingsByPosterId(posterId: Poster["id"]) {
+  return prisma.aRMarking.findMany({
+    where: {
+      posterId
+    },
+    orderBy: {
+      createdAt: 'asc'
+    }
+  });
+}
