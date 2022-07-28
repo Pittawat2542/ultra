@@ -1,9 +1,14 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { Form, useLoaderData } from "@remix-run/react";
-import { createNewARMarking, deleteARMarking } from "~/models/arMarking.server";
+import { Form, useLoaderData, useSubmit } from "@remix-run/react";
+import {
+  createNewARMarking,
+  deleteARMarking,
+  getAllMarkingTargetImagePaths,
+} from "~/models/arMarking.server";
 import {
   getPosterByCompetitionIdAndUserId,
   hasPosterSubmitted,
+  updateCompiledARFilePath,
 } from "~/models/poster.server";
 import {
   json,
@@ -14,6 +19,8 @@ import {
   unstable_parseMultipartFormData,
 } from "@remix-run/node";
 
+import Button from "~/components/Button/Button";
+import { Compiler } from "~/lib/mind-ar/compiler";
 import Footer from "~/components/Footer/Footer";
 import ImageListInput from "~/components/ListInput/ImageListInput";
 import type { MarkingMediaType } from "@prisma/client";
@@ -24,6 +31,7 @@ import { getCompetitionBySlug } from "~/models/competition.server";
 import invariant from "tiny-invariant";
 import { isCompetitionRegistered } from "~/models/registeredCompetitions.server";
 import { requireUserId } from "~/session.server";
+import { useState } from "react";
 
 export const loader = async ({ params, request }: LoaderArgs) => {
   const userId = await requireUserId(request);
@@ -60,7 +68,11 @@ export const loader = async ({ params, request }: LoaderArgs) => {
     userId
   );
 
-  return json({ competition, poster });
+  const markingImagePaths = await getAllMarkingTargetImagePaths(
+    poster?.id ?? ""
+  );
+
+  return json({ competition, poster, markingImagePaths });
 };
 
 export const action = async ({ request }: ActionArgs) => {
@@ -77,7 +89,25 @@ export const action = async ({ request }: ActionArgs) => {
   const submitButtonActionType = body.get("_action")?.toString();
   invariant(submitButtonActionType, "Submit button action type is not found.");
 
-  if (submitButtonActionType === "delete") {
+  if (submitButtonActionType === "compile") {
+    const posterId = body.get("poster-id")?.toString();
+    invariant(posterId, "Poster id is not found.");
+
+    const mindTargetFile = body.get("mind-file");
+    if (mindTargetFile && typeof mindTargetFile === "string") {
+      throw new Error("Mind target file is not found.");
+    }
+
+    const mindTargetFilePath =
+      "/uploads/ar-resources/" + (mindTargetFile as File).name;
+
+    const updateResult = await updateCompiledARFilePath(
+      posterId,
+      mindTargetFilePath
+    );
+
+    return json({ updateResult });
+  } else if (submitButtonActionType === "delete") {
     const markingId = body.get("marking-id")?.toString();
     invariant(markingId, "Marking id is not found.");
 
@@ -99,53 +129,69 @@ export const action = async ({ request }: ActionArgs) => {
       ?.toString() as MarkingMediaType;
     invariant(associatedMediaType, "Media type is not found.");
 
+    let associatedMediaPath = "";
     if (associatedMediaType === "IMAGE") {
       const mediaImage = body.get("media-image");
       if (mediaImage && typeof mediaImage === "string") {
         throw new Error("Media image is not found.");
       }
-      const mediaImagePath =
+      associatedMediaPath =
         "/uploads/ar-resources/" + (mediaImage as File)?.name;
-
-      const newMarking = await createNewARMarking({
-        posterId,
-        markingImagePath,
-        associatedMediaType,
-        associatedMediaPath: mediaImagePath,
-      });
-      return json({ newMarking });
     } else if (associatedMediaType === "TEXT") {
       const mediaText = body.get("media-text")?.toString();
       invariant(mediaText, "Media text is not found.");
-
-      const newMarking = await createNewARMarking({
-        posterId,
-        markingImagePath,
-        associatedMediaType,
-        associatedMediaPath: mediaText,
-      });
-      return json({ newMarking });
+      associatedMediaPath = mediaText;
     } else if (associatedMediaType === "THREE_D_MODEL") {
       const mediaModel = body.get("media-model");
       if (mediaModel && typeof mediaModel === "string") {
         throw new Error("Media model is not found.");
       }
-      const mediaModelPath =
+      associatedMediaPath =
         "/uploads/ar-resources/" + (mediaModel as File)?.name;
-
-      const newMarking = await createNewARMarking({
-        posterId,
-        markingImagePath,
-        associatedMediaType,
-        associatedMediaPath: mediaModelPath,
-      });
-      return json({ newMarking });
     }
+
+    const newMarking = await createNewARMarking({
+      posterId,
+      markingImagePath,
+      associatedMediaType,
+      associatedMediaPath,
+    });
+
+    return json({ newMarking });
   }
 };
 
+const _loadImage = async (file: File) => {
+  return new Promise((resolve, reject) => {
+    let img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+};
+
+const triggerMindFileCompilation = async (
+  files: File[],
+  progressCallback: (progress: number) => void
+) => {
+  const compiler = new Compiler();
+  const images = [];
+  for (let i = 0; i < files.length; i++) {
+    images.push(await _loadImage(files[i]));
+  }
+  await compiler.compileImageTargets(images, progressCallback);
+
+  const exportedBuffer = await compiler.exportData();
+  return new Blob([exportedBuffer]);
+};
+
 export default function ARPosterSubmission() {
-  const { competition, poster } = useLoaderData<typeof loader>();
+  const { competition, poster, markingImagePaths } =
+    useLoaderData<typeof loader>();
+  const [isCompiling, setIsCompiling] = useState(false);
+  const [compilationProgress, setCompilationProgress] = useState(0);
+  const submit = useSubmit();
+
   return (
     <>
       <NavigationBar />
@@ -174,6 +220,58 @@ export default function ARPosterSubmission() {
               posterId={poster?.id ?? ""}
             />
           </Form>
+          <div className="flex items-center justify-end gap-4">
+            <p className="italic opacity-70">
+              {isCompiling
+                ? "Please do not leave this page while compiling"
+                : "Please click 'Compile' button if you add/remove any marking."}
+            </p>
+            <Form method="post" encType="multipart/form-data">
+              <Button
+                id="_action"
+                type="submit"
+                value="compile"
+                onClick={async (e) => {
+                  e.preventDefault();
+                  setIsCompiling(true);
+                  const images = [];
+
+                  for (const imagePath of markingImagePaths) {
+                    const response = await fetch(imagePath.markingImagePath);
+                    const blob = await response.blob();
+                    const image = new File([blob], imagePath.markingImagePath);
+                    images.push(image);
+                  }
+
+                  const mindFile = await triggerMindFileCompilation(
+                    images,
+                    (progress) => {
+                      setCompilationProgress(progress * 2);
+                    }
+                  );
+                  setCompilationProgress(0);
+                  setIsCompiling(false);
+
+                  const data = new FormData();
+                  data.append(
+                    "mind-file",
+                    new File([mindFile], `${poster?.id}-targets.mind`)
+                  );
+                  data.append("_action", "compile");
+                  data.append("poster-id", poster?.id ?? "");
+                  submit(data, {
+                    method: "post",
+                    encType: "multipart/form-data",
+                  });
+                }}
+                disabled={isCompiling}
+              >
+                {isCompiling
+                  ? `${Math.floor(compilationProgress)}% Compiling...`
+                  : "Compile"}
+              </Button>
+            </Form>
+          </div>
         </section>
       </main>
       <Footer />

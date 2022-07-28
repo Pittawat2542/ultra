@@ -1,14 +1,13 @@
 import type { ARMarking, Poster } from "@prisma/client";
-import { useRef, useState } from "react";
 
 import Button from "../Button/Button";
 import Divider from "../Divider/Divider";
 import FileUploadInput from "../Inputs/FileUploadInput";
 import ImageListInputItem from "./ImageListInputItem";
 import { MarkingMediaType } from "@prisma/client";
-import { PlusIcon } from "@heroicons/react/outline";
 import SelectInput from "../Inputs/SelectInput";
 import TextInput from "../Inputs/TextInput";
+import { useState } from "react";
 
 type ImageListInputProps = {
   isRequired?: boolean;
@@ -30,7 +29,6 @@ export default function ImageListInput({
   const [selectedMediaType, setSelectedMediaType] = useState<MarkingMediaType>(
     MarkingMediaType.IMAGE
   );
-  const [isAdding, setIsAdding] = useState(false);
   const [text, setText] = useState("");
 
   const onMediaTypeChange = (mediaType: string) => {
@@ -51,7 +49,7 @@ export default function ImageListInput({
       {previousMarkings.map((mark, index) => (
         <ImageListInputItem key={mark.id} order={index} marking={mark} />
       ))}
-      <h3 className="font-serif text-lg my-2">Add New Marking</h3>
+      <h3 className="my-2 font-serif text-lg">Add New Marking</h3>
       <div className="my-4 px-8 font-normal">
         <input type="hidden" name="poster-id" value={posterId} />
         <input type="hidden" name="media-type" value={selectedMediaType} />
@@ -82,13 +80,6 @@ export default function ImageListInput({
           <FileUploadInput id="media-model" type="model" />
         )}
         <div className="mt-4 flex justify-end gap-4">
-          <Button
-            onClick={() => setIsAdding(false)}
-            className="w-1/12 px-4 py-1 text-xl"
-          >
-            Cancel
-          </Button>
-          {/* TODO: Should submit manually, show loading status, and trigger a recompilation, setIsAdding = False */}
           <Button
             type="submit"
             id="_action"

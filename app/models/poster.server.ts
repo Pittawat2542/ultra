@@ -1,5 +1,7 @@
 import type { Competition, Poster, User } from "@prisma/client";
 
+import fs from 'fs/promises'
+import path from "path";
 import { prisma } from "~/db.server";
 
 export async function getPostersByCompetitionId(competitionId: Competition["id"]) {
@@ -56,6 +58,28 @@ export async function getPosterBySlug(slug: Poster["slug"]) {
     },
     include: {
       competition: true,
+    }
+  })
+}
+
+export async function updateCompiledARFilePath(posterId: Poster["id"], compiledARFilePath: Poster["compiledARFilePath"]) {
+  const poster = await prisma.poster.findUnique({
+    where: {
+      id: posterId,
+    }
+  });
+
+  if (poster?.compiledARFilePath) {
+    const filePath = path.resolve(poster.compiledARFilePath.substring(1));
+    await fs.unlink(filePath)
+  }
+
+  return prisma.poster.update({
+    where: {
+      id: posterId,
+    },
+    data: {
+      compiledARFilePath,
     }
   })
 }

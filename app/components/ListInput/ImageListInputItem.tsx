@@ -1,3 +1,5 @@
+import { Form, useSubmit } from "@remix-run/react";
+
 import type { ARMarking } from "@prisma/client";
 import Divider from "../Divider/Divider";
 import { TrashIcon } from "@heroicons/react/outline";
@@ -11,6 +13,8 @@ export default function ImageListInputItem({
   order,
   marking,
 }: ImageListInputItemProps) {
+  const submit = useSubmit();
+
   return (
     <>
       <li className="my-2 flex justify-between rounded-lg px-8 py-2 font-normal transition hover:bg-white hover:bg-opacity-10 focus:bg-white focus:bg-opacity-10">
@@ -44,12 +48,18 @@ export default function ImageListInputItem({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <input type="hidden" name="marking-id" value={marking.id} />
           <button
-            type="submit"
-            name="_action"
-            value="delete"
             className="flex items-center rounded px-4 py-1 transition hover:bg-white hover:bg-opacity-30 focus:bg-opacity-30"
+            onClick={(e) => {
+              e.preventDefault();
+              const data = new FormData();
+              data.append("marking-id", marking.id);
+              data.append("_action", "delete");
+              submit(data, {
+                method: "post",
+                encType: "multipart/form-data",
+              });
+            }}
           >
             <TrashIcon className="mr-2 h-5 w-5" /> Delete
           </button>
