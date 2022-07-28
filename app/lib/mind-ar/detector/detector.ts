@@ -400,7 +400,6 @@ export class Detector {
     });
   }
 
-  // TODO: maybe can try just using average momentum, instead of histogram method. histogram might be overcomplicated
   _computeOrientationHistograms(prunedExtremasT, pyramidImagesT) {
     const oneOver2PI = 0.159154943091895;
 
@@ -675,7 +674,6 @@ export class Detector {
 
   // faster to do it in CPU
   // if we do in gpu, we probably need to use tf.topk(), which seems to be run in CPU anyway (no gpu operation for that)
-  //  TODO: research adapative maximum supression method
   _applyPrune(extremasResultsT) {
     const nBuckets = NUM_BUCKETS_PER_DIMENSION * NUM_BUCKETS_PER_DIMENSION;
     const nFeatures = MAX_FEATURES_PER_BUCKET;

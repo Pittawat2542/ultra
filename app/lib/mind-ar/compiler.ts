@@ -37,7 +37,7 @@ export class Compiler {
   }
 
   // input html Images
-  compileImageTargets(images: any, progressCallback: any) {
+  compileImageTargets(images: any, progressCallback: (progress: number) => void) {
     return new Promise(async (resolve, reject) => {
       const targetImages: any = [];
       for (let i = 0; i < images.length; i++) {
@@ -156,7 +156,6 @@ const _extractMatchingFeatures = async (imageList, doneCallback) => {
   const keyframes = [];
   for (let i = 0; i < imageList.length; i++) {
     const image = imageList[i];
-    // TODO: can improve performance greatly if reuse the same detector. just need to handle resizing the kernel outputs
     const detector = new Detector(image.width, image.height);
 
     await tf.nextFrame();

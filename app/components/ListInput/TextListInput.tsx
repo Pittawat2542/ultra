@@ -21,7 +21,6 @@ export default function TextListInput({
   maxLength,
   addNewLabelText,
 }: TextListInputProps) {
-  //TODO: Refactor duplicate code with TextListInputItem
   const [isAdding, setIsAdding] = useState(false);
   const [listItems, setListItems] = useState<string[]>([]);
   const [newText, setNewText] = useState("");
