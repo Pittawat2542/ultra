@@ -26,6 +26,9 @@ export async function getPosterByCompetitionIdAndUserId(competitionId: Competiti
     where: {
       competitionId: competitionId,
       userId: userId,
+    },
+    include: {
+      markings: true
     }
   })
 }

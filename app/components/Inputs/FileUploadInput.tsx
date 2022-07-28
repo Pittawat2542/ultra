@@ -24,7 +24,7 @@ export default function FileUploadInput({
     if (numberOfFile > 0 && numberOfFile < 2) {
       const file = inputUploadRef.current!.files![0];
       previewImageRef.current!.src = URL.createObjectURL(file);
-      previewImageRef.current!.classList.remove("hidden")
+      previewImageRef.current!.classList.remove("hidden");
     }
   };
 
@@ -46,16 +46,18 @@ export default function FileUploadInput({
         type="file"
         name={id}
         id={id}
-        accept="image/*"
+        accept={type === "image" ? ".jpg,.jpeg,.gif,.png" : ".gltf,.glb"}
         required={isRequired}
         onChange={onUploadedImageChange}
       />
-      <img
-        ref={previewImageRef}
-        id={`${id}-preview`}
-        alt="uploaded preview"
-        className="mt-2 max-h-[300px] object-contain hidden"
-      />
+      {type === "image" && (
+        <img
+          ref={previewImageRef}
+          id={`${id}-preview`}
+          alt="uploaded preview"
+          className="mt-2 hidden max-h-[300px] object-contain"
+        />
+      )}
     </label>
   );
 }
