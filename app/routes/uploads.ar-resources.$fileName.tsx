@@ -30,7 +30,7 @@ export const loader = async ({ params }: LoaderArgs) => {
           ? "images/gif"
           : isGltf
           ? "model/gltf+json"
-          : "",
+          : "application/octet-stream",
       },
     });
   } catch (_) {
