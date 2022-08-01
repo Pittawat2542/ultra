@@ -56,6 +56,9 @@ export default function App() {
         <Outlet />
         <ScrollRestoration />
         <Scripts />
+        <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.1.4/dist/mindar-image.prod.js"></script>
+        <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.1.4/dist/mindar-image-aframe.prod.js"></script>
         <LiveReload />
       </body>
     </html>
